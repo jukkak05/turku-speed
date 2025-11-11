@@ -1,0 +1,24 @@
+# fly.toml app configuration file generated for foli-speed on 2025-11-10T17:38:28+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'foli-speed'
+primary_region = 'arn'
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = false
+auto_start_machines = false
+min_machines_running = 1
+processes = ['app']
+
+[[vm]]
+memory = '256'
+cpu_kind = 'shared'
+cpus = 1
+
+[env]
+HOSTNAME = 'local'
+PORT = 8080
