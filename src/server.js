@@ -1,33 +1,43 @@
-import "jsr:@std/dotenv/load";
 import { startPolling, getVehicles } from './foliService.js';
 
+// Poll Föli Api on launch
 startPolling(); 
 
-// Get environment variables
-const hostname = Deno.env.get("HOSTNAME") === "production" ? "0.0.0.0" : "localhost";
-const port = Number(Deno.env.get("PORT")) || 8080;
+// Set hostname and port
+const hostname = 'localhost';
+const port = 8080;
 
-function json(data, status = 200) {
+// Return vehicles data from Föli API
+function returnVehicles(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8",
-               "access-control-allow-origin": "*" },
+    headers: { 
+      "content-type": "application/json; charset=utf-8",
+      "access-control-allow-origin": "*" 
+    },
   });
 }
 
+// Serves HTTP requests with the given handler.
+// https://docs.deno.com/api/deno/~/Deno.serve
 Deno.serve({ 
   hostname: hostname, 
   port: port 
 }, 
 async (req) => {
 
+  // Build URL object
   const url = new URL(req.url);
 
+  // Serve static files
   if (url.pathname.startsWith("/") && !url.pathname.startsWith("/api/")) {
 
+    // Check what to serve based on request
     const filePath = url.pathname === "/" 
     ? "../public/index.html" 
     : `../public${url.pathname}`;
+
+    // Try to serve files
     try {
       const file = await Deno.readFile(filePath);
       const contentType = filePath.endsWith(".html") ? "text/html" :
@@ -44,14 +54,10 @@ async (req) => {
       // File not found, continue to API routes
     }
   } else if (url.pathname === '/api/vehicles') {
-
     const vehicles = getVehicles(); 
-    return json(vehicles);
-
+    return returnVehicles(vehicles);
   } else {
-
-    return new Response("Not Found", { status: 404 });
-
+    return new Response("Nothing to see here!", { status: 404 });
   }
 
 });

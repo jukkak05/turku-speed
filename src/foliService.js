@@ -7,7 +7,7 @@ const fetchVehicles = async () => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         cachedVehicles = data;
-        console.log(`Updated vehicles: ${cachedVehicles.status}`);
+        console.log(`Updated vehicles`);
     } catch (err) {
         console.error('Failed to fetch vechiles:', err);
     }
