@@ -7,17 +7,6 @@ startPolling();
 const hostname = 'localhost';
 const port = 8080;
 
-// Return vehicles data from Föli API
-function returnVehicles(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 
-      "content-type": "application/json; charset=utf-8",
-      "access-control-allow-origin": "*" 
-    },
-  });
-}
-
 // Serves HTTP requests with the given handler.
 // https://docs.deno.com/api/deno/~/Deno.serve
 Deno.serve({ 
@@ -33,32 +22,44 @@ async (req) => {
   if (url.pathname.startsWith("/") && !url.pathname.startsWith("/api/")) {
 
     // Check what to serve based on request
-    const filePath = url.pathname === "/" 
-    ? "../public/index.html" 
-    : `../public${url.pathname}`;
+    const filePath = url.pathname === "/" ? "../public/index.html" : `../public${url.pathname}`;
 
     // Try to serve files
     try {
       const file = await Deno.readFile(filePath);
       const contentType = filePath.endsWith(".html") ? "text/html" :
                           filePath.endsWith(".js") ? "application/javascript" :
-                          filePath.endsWith(".css") ? "text/css" :
-                          "application/octet-stream";
+                          filePath.endsWith(".css") ? "text/css" : ""
       return new Response(
         file, { 
           headers: { 
             "content-type": contentType 
           } 
-        });
+        }
+      );
     } catch {
-      // File not found, continue to API routes
+      return new Response("Error requesting files", { status: 503 });
     }
   } else if (url.pathname === '/api/vehicles') {
-    const vehicles = getVehicles(); 
-    return returnVehicles(vehicles);
-  } else {
-    return new Response("Nothing to see here!", { status: 404 });
-  }
 
+    // Only allow requests from localhost
+    if ( req.headers.get('host') === `${hostname}:${port}` ) {
+      
+      // Get vehicles data
+      const vehicles = getVehicles(); 
+    
+      // Return vehicles
+      return new Response(JSON.stringify(vehicles), {
+        status: 200, 
+        headers: {
+          "content-type": "application/json; charset=utf-8"
+        },
+      });
+    } else {
+      return new Response("Request not allowed", { status: 403});
+    }
+  } else {
+    return new Response("Nothing to see here!", { status: 403 });
+  }
 });
   
