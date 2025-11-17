@@ -2,8 +2,8 @@
 const map = L.map('map').setView([60.45, 22.25], 13);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Array to hold vehicles data
-let vehicles = [];
+// Store markers 
+const markers = {};
 
 async function updateVehicles() {
 
@@ -17,27 +17,30 @@ async function updateVehicles() {
     const data = await res.json(); 
 
     // Check if data does not contain vehicles
-    if (!data.result?.vehicles) {
+    if (!data.vehicles) {
       console.warn('No vehicles in response');
       return;
     }
     
     // Run for each returned vehicle object
-    Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
+    Object.entries(data.vehicles).forEach(([id, vehicle]) => {
 
-      // If vehicle id is now known
-      if (!vehicles[id]) {
+      // If vehicle id is not known
+      if (!markers[id]) {
 
         // Add new vehicle pin to map
-        vehicles[id]= L.marker([vehicle.latitude, vehicle.longitude]).addTo(map);
-
+        markers[id]= L.marker([vehicle.latitude, vehicle.longitude])
+        .addTo(map)
+        .bindPopup(`<h3>Linja: ${vehicle.lineref}<h3>`);
       } else {
 
-        // If vehicle id is already on map, update position
-        vehicles[id].setLatLng([vehicle.latitude,vehicle.longitude]);
+        // If vehicle is already on map, update position
+        markers[id].setLatLng([vehicle.latitude,vehicle.longitude])
+        .setPopupContent(`<h3>Linja: ${vehicle.lineref}<h3><br>
+          <p><strong>Nopeus:</strong> ${vehicle.speed} km/h </p>
+        `);
 
       }
-
     });
     
   } catch (err) {

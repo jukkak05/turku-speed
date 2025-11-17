@@ -29,7 +29,8 @@ async (req) => {
       const file = await Deno.readFile(filePath);
       const contentType = filePath.endsWith(".html") ? "text/html" :
                           filePath.endsWith(".js") ? "application/javascript" :
-                          filePath.endsWith(".css") ? "text/css" : ""
+                          filePath.endsWith(".css") ? "text/css" : 
+                          filePath.endsWith(".jpg") ? "image/jpeg" : ""
       return new Response(
         file, { 
           headers: { 
@@ -38,7 +39,7 @@ async (req) => {
         }
       );
     } catch {
-      return new Response("Error requesting files", { status: 503 });
+      return new Response("Error requesting files", { status: 404 });
     }
   } else if (url.pathname === '/api/vehicles') {
 
