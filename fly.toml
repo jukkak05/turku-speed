@@ -18,7 +18,3 @@ processes = ['app']
 memory = '256'
 cpu_kind = 'shared'
 cpus = 1
-
-[env]
-HOSTNAME = 'local'
-PORT = 8080
