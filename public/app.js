@@ -25,22 +25,25 @@ async function updateVehicles() {
     // Run for each returned vehicle object
     Object.entries(data.vehicles).forEach(([id, vehicle]) => {
 
-      // If vehicle id is not known
+      // If vehicle id is not known and vehicle has coordinates
       if (!markers[id]) {
 
-        // Add new vehicle pin to map
+        // Add new vehicle marker to map
         markers[id]= L.marker([vehicle.latitude, vehicle.longitude])
         .addTo(map)
-        .bindPopup(`<h3>Linja: ${vehicle.lineref}<h3>`);
+        .bindPopup(`<h3>Linja: ${vehicle.lineref}</h3>`);
+
       } else {
 
-        // If vehicle is already on map, update position
+        // If vehicle is already on map, update marker position
         markers[id].setLatLng([vehicle.latitude,vehicle.longitude])
-        .setPopupContent(`<h3>Linja: ${vehicle.lineref}<h3><br>
-          <p><strong>Nopeus:</strong> ${vehicle.speed} km/h </p>
+        .setPopupContent(`
+          <h3>Linja: ${vehicle.lineref}</h3>
+          <p><strong>Nopeus:</strong> ${vehicle.speed} km/h</p>
         `);
 
       }
+
     });
     
   } catch (err) {
@@ -52,5 +55,5 @@ async function updateVehicles() {
 // Add vehicles to map on start
 updateVehicles(); 
 
-// Update vehicles once every 10 sec
-setInterval(updateVehicles, 10000);
+// Update vehicles once every 8 sec
+setInterval(updateVehicles, 8000);
