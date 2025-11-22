@@ -136,7 +136,7 @@ Deno.serve({
       });
     } else {
       // Return error if requests are over bucket limit
-      return new Response("Too many requests", { status: 429 });
+      return new Response("Hold on! Too many requests", { status: 429 });
     }
   } else {
     // Return error if requested something outside the app scope

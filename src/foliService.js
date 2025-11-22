@@ -93,8 +93,8 @@ const fetchVehicles = async () => {
 export function startPolling() {
   // Fetch immediately on startup
   fetchVehicles();
-  // Then poll api every 7 sec
-  setInterval(fetchVehicles, 7000);
+  // Then poll api every 5 sec
+  setInterval(fetchVehicles, 5000);
 }
 
 export function getVehicles() {
