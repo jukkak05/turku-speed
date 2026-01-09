@@ -36,6 +36,8 @@ async function updateVehicles() {
           .bindPopup(`
           <h3>Linja: ${vehicle.lineref}</h3>
           <p><strong>Calculating speed...</strong></p>
+          <p>Lat: ${vehicle.latitude}</p>
+          <p>Lat: ${vehicle.longitude}</p>
         `);
       } else {
         // If vehicle is known, update marker position and add speed
@@ -43,6 +45,8 @@ async function updateVehicles() {
           .setPopupContent(`
           <h3>Linja: ${vehicle.lineref}</h3>
           <p><strong>Nopeus:</strong> ${vehicle.speed} km/h</p>
+           <p>Lat: ${vehicle.latitude}</p>
+          <p>Lat: ${vehicle.longitude}</p>
         `);
       }
     });
@@ -56,3 +60,13 @@ updateVehicles();
 
 // Update vehicles once every 8 sec
 setInterval(updateVehicles, 8000);
+
+// Accordion 
+document.querySelectorAll('#accordion button').forEach(button => {
+  button.addEventListener('click', function() {
+    this.nextElementSibling.style.display === 'none'
+    ? this.nextElementSibling.style.display = 'block'
+    : this.nextElementSibling.style.display = 'none';
+  });
+});
+

@@ -1,4 +1,17 @@
 import { getVehicles, startPolling } from "./foliService.js";
+// import rbush from "npm:rbush";
+// import bbox from "npm:@turf/bbox";
+
+// const speedGeoJSON = JSON.parse(
+//   await Deno.readTextFile(new URL("../digiroad/turku_speedlimits.json", import.meta.url)),
+// );
+
+// const index = new rbush(); 
+// const items = speedGeoJSON.features.map((feature, id) => {
+//   const [minLon, minLat, maxLon, maxLat] = bbox(feature);
+//   return { minX: minLon, minY: minLat, maxX: maxLon, maxY: maxLat, id };
+// });
+// index.load(items);
 
 // Poll Föli Api on launch
 startPolling();

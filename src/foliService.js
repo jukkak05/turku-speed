@@ -7,6 +7,15 @@ const cachedVehicles = {
   vehicles: {},
 };
 
+// Function to calculate bbox around the vehicle
+function buildBbox(lat, lon, delta = 0.00005) {
+  const minLat = lat - delta;
+  const maxLat = lat + delta;
+  const minLon = lon - delta;
+  const maxLon = lon + delta;
+  return `${minLon},${minLat},${maxLon},${maxLat},EPSG:4326`;
+}
+
 const fetchVehicles = async () => {
   try {
     // Poll Föli API for vehicles data
@@ -51,19 +60,15 @@ const fetchVehicles = async () => {
         }
 
         // Update vehicle details on cachedVehicles
-        cachedVehicles.vehicles[id].oldLat =
-          cachedVehicles.vehicles[id].latitude;
-        cachedVehicles.vehicles[id].oldLon =
-          cachedVehicles.vehicles[id].longitude;
+        cachedVehicles.vehicles[id].oldLat = cachedVehicles.vehicles[id].latitude;
+        cachedVehicles.vehicles[id].oldLon = cachedVehicles.vehicles[id].longitude;
         cachedVehicles.vehicles[id].latitude = vehicle.latitude;
         cachedVehicles.vehicles[id].longitude = vehicle.longitude;
-        cachedVehicles.vehicles[id].oldTimestamp =
-          cachedVehicles.vehicles[id].timestamp;
+        cachedVehicles.vehicles[id].oldTimestamp = cachedVehicles.vehicles[id].timestamp;
         cachedVehicles.vehicles[id].timestamp = vehicle.recordedattime;
 
         // Calculate time in seconds that the vehicle has travelled
-        const travelledTime = cachedVehicles.vehicles[id].timestamp -
-          cachedVehicles.vehicles[id].oldTimestamp;
+        const travelledTime = cachedVehicles.vehicles[id].timestamp - cachedVehicles.vehicles[id].oldTimestamp;
         cachedVehicles.vehicles[id].travelledTime = travelledTime;
 
         // Calculate distance in meters that the vehicle has travelled using geolib
@@ -83,6 +88,13 @@ const fetchVehicles = async () => {
         const speedPerMSec = travelledDistance / travelledTime;
         const speedPerKMHour = parseFloat(speedPerMSec * 3.6).toFixed(2);
         cachedVehicles.vehicles[id].speed = speedPerKMHour;
+
+        // Calculate bbox around the bus based on lat, lon and delta
+        const bbox = buildBbox(
+          cachedVehicles.vehicles[id].latitude, 
+          cachedVehicles.vehicles[id].longitude
+        ); 
+        cachedVehicles.vehicles[id].bbox = bbox; 
       }
     });
   } catch (err) {
