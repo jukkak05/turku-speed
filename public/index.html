@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fi">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Livekartta</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FÖLIspeed</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -16,28 +16,26 @@
       crossorigin=""
     ></script>
     <link rel="stylesheet" href="style.css">
+    <script src="app.js"></script>
   </head>
   <body>
-    <div id="main">
-      <h1><span>föli</span>speed</h1>
+    <main>
+      <h1>
+        <span>föli</span>speed
+      </h1>
       <div id="map"></div>
-      <div id="accordion">
-        <button>Mikä?</button>
-        <div class="panel">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin purus diam, ornare id sapien vitae, lacinia egestas nisi. Sed dolor magna, aliquet vel volutpat nec, molestie a tortor. Maecenas pretium leo nisl, nec maximus sem accumsan et. Nam sagittis massa at ipsum rutrum fringilla. Nulla sit amet condimentum libero. In at odio risus. Cras at laoreet nisl. Phasellus rhoncus enim nisi, sit amet pulvinar quam tempor dapibus. Suspendisse vel lectus vitae metus gravida dignissim. Pellentesque nec imperdiet leo, id semper nisi.
-        </div>
-        <button>Miksi?</button>
-        <div class="panel">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin purus diam, ornare id sapien vitae, lacinia egestas nisi. Sed dolor magna, aliquet vel volutpat nec, molestie a tortor. Maecenas pretium leo nisl, nec maximus sem accumsan et. Nam sagittis massa at ipsum rutrum fringilla. Nulla sit amet condimentum libero. In at odio risus. Cras at laoreet nisl. Phasellus rhoncus enim nisi, sit amet pulvinar quam tempor dapibus. Suspendisse vel lectus vitae metus gravida dignissim. Pellentesque nec imperdiet leo, id semper nisi.
-        </div>
-        <button>Miten?</button>
-        <div class="panel">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin purus diam, ornare id sapien vitae, lacinia egestas nisi. Sed dolor magna, aliquet vel volutpat nec, molestie a tortor. Maecenas pretium leo nisl, nec maximus sem accumsan et. Nam sagittis massa at ipsum rutrum fringilla. Nulla sit amet condimentum libero. In at odio risus. Cras at laoreet nisl. Phasellus rhoncus enim nisi, sit amet pulvinar quam tempor dapibus. Suspendisse vel lectus vitae metus gravida dignissim. Pellentesque nec imperdiet leo, id semper nisi.
-        </div>
-
-      </div>
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <script src="/app.js"></script>
-    </div>
+      <details>
+        <summary>Mikä?</summary>
+        <p>Selitys tulee tähän....</p>
+      </details>
+      <details>
+        <summary>Miksi?</summary>
+        <p>Selitys tulee tähän....</p>
+      </details>
+      <details>
+        <summary>Miten?</summary>
+        <p>Selitys tulee tähän....</p>
+      </details>
+    </main>
   </body>
 </html>

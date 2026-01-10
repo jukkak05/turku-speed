@@ -1,1 +1,0 @@
-flyctl deploy --ha=false
