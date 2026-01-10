@@ -16,10 +16,6 @@ import { getVehicles, startPolling } from "./foliService.js";
 // Poll Föli Api on launch
 startPolling();
 
-// Set hostname and port
-const hostname = "localhost";
-const port = 8080;
-
 // Function to get the client ip or forwarded header
 function clientIp(req) {
   return req.headers.get("fly-client-ip") ||
@@ -27,13 +23,14 @@ function clientIp(req) {
     "unknown";
 }
 
-// Rate limiter settings
-const WINDOW_MS = 8000; // Refill window 8 sec
-const MAX_TOKENS = 2; // Max requests per window
-const buckets = new Map(); // Map to store IP -> { tokens, lastRefill }
-
 // Function for rate limiting requests
 function canProceed(ip) {
+
+  // Rate limiter settings
+  const WINDOW_MS = 8000; // Refill window 8 sec
+  const MAX_TOKENS = 2; // Max requests per window
+  const buckets = new Map(); // Map to store IP -> { tokens, lastRefill }
+
   // Current time
   const now = Date.now();
 
@@ -59,12 +56,16 @@ function canProceed(ip) {
   bucket.tokens -= 1;
   buckets.set(ip, bucket);
   return true;
+
 }
 
+// Serves HTTP requests with the given handler.
+// https://docs.deno.com/api/deno/~/Deno.serve
 Deno.serve({
-  hostname: hostname,
-  port: port,
+  hostname: "0.0.0.0",
+  port: 8080,
 }, async (req) => {
+  
   // Build URL object
   const url = new URL(req.url);
 

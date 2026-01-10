@@ -5,7 +5,8 @@ FROM denoland/deno:latest
 WORKDIR /app
 
 # (Valinnainen) deno.json / deno.jsonc tehtäviä yms. varten
-#COPY deno.json* ./
+COPY deno.json ./
+COPY deno.lock ./
 
 # Sovelluskoodi ja staattiset tiedostot
 COPY src ./src
@@ -13,7 +14,7 @@ COPY public ./public
 
 # Esilataa riippuvuudet (nopeammat deployt ja vähemmän cold start -viivettä)
 # Tämä hakee myös mahdolliset npm:-tuonnit (esim. "npm:hono")
-RUN deno cache src/server.js
+RUN deno cache --lock=deno.lock --frozen src/server.js
 
 # Fly.io käyttää PORT-muuttujaa; pidä se ja kuuntele 0.0.0.0:PORT
 ENV PORT=8080

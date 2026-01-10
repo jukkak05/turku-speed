@@ -1,11 +1,12 @@
 // Import geolib
 // Docs: https://www.npmjs.com/package/geolib
-import { getDistance } from "npm:geolib";
+import { getDistance } from "geolib";
 
 // Object to store cached vehicles
 const cachedVehicles = {
   vehicles: {},
 };
+
 
 // Function to calculate bbox around the vehicle
 function buildBbox(lat, lon, delta = 0.00005) {
@@ -27,7 +28,6 @@ const fetchVehicles = async () => {
 
     // Get json data from response
     const data = await res.json();
-
     console.log("New vehicles data fetched");
 
     // Add response status and servertime to cachedVehicles
@@ -107,6 +107,11 @@ export function startPolling() {
   fetchVehicles();
   // Then poll api every 5 sec
   setInterval(fetchVehicles, 5000);
+  // setInterval(function() { console.log(cachedVehicles)}, 5000);
+  // setTimeout(() => {
+  //       console.log(cachedVehicles.vehicles);
+  // }, 7000);
+
 }
 
 export function getVehicles() {

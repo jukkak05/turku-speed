@@ -1,0 +1,10 @@
+{
+    "tasks": {
+        "dev": "deno run --watch --allow-net --allow-env --allow-read src/server.js",
+        "lock": "deno cache --lock=deno.lock --lock-write src/server.js",
+        "check": "deno fmt --check && deno lint"
+    },
+    "imports": {
+        "geolib": "npm:geolib@3.3.4"
+    }
+}

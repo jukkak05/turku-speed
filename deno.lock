@@ -1,0 +1,16 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:geolib@3.3.4": "3.3.4"
+  },
+  "npm": {
+    "geolib@3.3.4": {
+      "integrity": "sha512-EicrlLLL3S42gE9/wde+11uiaYAaeSVDwCUIv2uMIoRBfNJCn8EsSI+6nS3r4TCKDO6+RQNM9ayLq2at+oZQWQ=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:geolib@3.3.4"
+    ]
+  }
+}

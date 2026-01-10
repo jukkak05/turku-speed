@@ -12,6 +12,7 @@ const markers = {};
 
 // Function to update vehicles
 async function updateVehicles() {
+
   try {
     // Fetch vehicles data from our api
     const res = await fetch("/api/vehicles");
@@ -36,8 +37,6 @@ async function updateVehicles() {
           .bindPopup(`
           <h3>Linja: ${vehicle.lineref}</h3>
           <p><strong>Calculating speed...</strong></p>
-          <p>Lat: ${vehicle.latitude}</p>
-          <p>Lat: ${vehicle.longitude}</p>
         `);
       } else {
         // If vehicle is known, update marker position and add speed
@@ -45,8 +44,6 @@ async function updateVehicles() {
           .setPopupContent(`
           <h3>Linja: ${vehicle.lineref}</h3>
           <p><strong>Nopeus:</strong> ${vehicle.speed} km/h</p>
-           <p>Lat: ${vehicle.latitude}</p>
-          <p>Lat: ${vehicle.longitude}</p>
         `);
       }
     });
@@ -58,8 +55,11 @@ async function updateVehicles() {
 // Add vehicles to map on start
 updateVehicles();
 
-// Update vehicles once every 8 sec
-setInterval(updateVehicles, 8000);
+// Update vehicles once every 5 sec
+setInterval(updateVehicles, 5000);
+// setInterval(() => { 
+//   console.log(markers) 
+// }, 5000);
 
 // Accordion 
 document.querySelectorAll('#accordion button').forEach(button => {
