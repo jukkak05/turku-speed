@@ -2,7 +2,7 @@
 // Docs: https://www.npmjs.com/package/geolib
 import { getDistance } from "geolib";
 
-// Define types
+// Define LatLon type
 type LatLon = { latitude: number; longitude: number};
 
 // import rbush from "npm:rbush";
@@ -28,8 +28,20 @@ function _buildBbox(lat, lon, delta = 0.00005) {
   return `${minLon},${minLat},${maxLon},${maxLat},EPSG:4326`;
 }
 
-// Function to calculate travelled distance 
-function distanceMeters(from: LatLon, to: LatLon): number {
+// Function to calculate travelled time in seconds
+function calculateTravellingTime(oldTime: number, newTime: number): number {
+    return oldTime - newTime; 
+}
+
+// Function to calculate travelled distance in meters
+function calculateTravellingDistance(from: LatLon, to: LatLon): number {
     // Calculate travelled distance using geolib and vehicle coordinates
     return getDistance(from, to);
 }
+
+// Function to calculate travelled speed in km/h
+function calculateTravellingSpeed(distance: number, time: number) {
+    return Math.round((distance / time) * 3.6); 
+}
+
+export { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed };

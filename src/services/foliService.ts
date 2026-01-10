@@ -1,3 +1,5 @@
+import { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed } from "../lib/geo.ts";
+
 // Föli API Types
 type ApiResponse = {
     status?: string;
@@ -26,6 +28,9 @@ type CachedVehicle = {
     oldtimestamp?: number; 
     oldLat?: number; 
     oldLon?: number;
+    travelledTime: number; 
+    travelledDistance: number; 
+    speed: number; 
 }
 
 // Object to store cached vehicles
@@ -37,7 +42,7 @@ const cachedVehicles: CachedVehicles = {
 
 // Function to fetch vehicles 
 const fetchVehicles = async (): Promise<void> => {
-    
+
   try {
 
     // Poll Föli API for vehicles data
@@ -87,6 +92,24 @@ const fetchVehicles = async (): Promise<void> => {
         cachedVeh.longitude = vehicle.longitude; 
         cachedVeh.oldtimestamp = cachedVeh.timestamp;
         cachedVeh.timestamp = vehicle.recordedattime;
+
+        // Calculate time in seconds that the vehicle has travelled
+        cachedVeh.travelledTime = calculateTravellingTime(vehicle.recordedattime, cachedVeh.oldtimestamp);
+
+        // Calculate distance in meters that the vehicle has travelled
+        cachedVeh.travelledDistance = calculateTravellingDistance(
+            { 
+                latitude: cachedVeh.oldLat, 
+                longitude: cachedVeh.oldLon
+            },
+            {
+                latitude: vehicle.latitude, 
+                longitude: vehicle.longitude
+            }
+        );
+        
+        // Calculate speed for the vehicle
+        cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
     });
 
