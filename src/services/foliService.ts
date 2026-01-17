@@ -1,4 +1,7 @@
+// Import geo functions
 import { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed } from "../lib/geo.ts";
+// Export set for connected web sockets
+export const connectedSockets = new Set<WebSocket>(); 
 
 // Föli API Types
 type ApiResponse = {
@@ -63,7 +66,7 @@ const fetchVehicles = async (): Promise<void> => {
     // Handle each vehicle 
     Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
 
-        // Reference to cached vehicle for convenience
+        // Reference to cached vehicle 
         let cachedVeh = cachedVehicles.vehiclesById[id];
         
         // Abort if vehicle does not have coordinates
@@ -108,16 +111,21 @@ const fetchVehicles = async (): Promise<void> => {
             }
         );
         
-        // Calculate speed for the vehicle
+        // Calculate speed in km/h that the vehicle has travelled
         cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
     });
 
+    // Broadcast vehicles to websocket connections
+    connectedSockets.forEach((socket) => {
+        socket.send(JSON.stringify(cachedVehicles));
+    });
+    
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);
-  } 
+  }
 
-}
+} 
 
 function startPolling() {
     // Fetch vehicles on startup
@@ -126,5 +134,8 @@ function startPolling() {
     setInterval(fetchVehicles, 5000);
 }
 
-export { startPolling };
+function getVehicles() {
+    return cachedVehicles;
+}
 
+export { startPolling, getVehicles };

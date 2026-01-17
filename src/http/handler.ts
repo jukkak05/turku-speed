@@ -18,10 +18,10 @@ const requestHandler = async (req: Request): Promise<Response> => {
   // Handle requests based on pathname
   if (url.pathname === "/api/vehicles") {
     // Handle api requests
-    await apiHandler();
+    return apiHandler(req);
   } else {
     // Handle static files requests
-    await staticHandler(req);
+    return await staticHandler(req, url);
   }
 };
 

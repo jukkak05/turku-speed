@@ -11,5 +11,5 @@ Deno.serve({
   port: 8080,
 }, async (req) => {
   // Handle http request in handler
-  await requestHandler(req);
+ return await requestHandler(req);
 });
