@@ -1,51 +1,32 @@
+import { serveFile } from "@std/http/file-server";
+
 const staticHandler = async (req: Request, url: URL): Promise<Response> => {
-  
-  // URL object for the public folder root
-  const publicFolder = new URL('../../public', import.meta.url);
-  
-  // URL object for file in public folder
-  const fileUrl = url.pathname === '/'
-  ? new URL('index.html', publicFolder)
-  : new URL(url.pathname.slice(1), publicFolder);
 
-  // Extract file extension from file path
-  const filePath = fileUrl.pathname; 
-  const fileExtension = filePath.split('.').pop() ?? '';
+  // Pathname for root, other files and everything else
+  const pathname = 
+    url.pathname === "/" ? "/index.html" 
+    : url.pathname.includes(".") ? url.pathname
+    : "/index.html";
 
-  // Only allow html, css and js files
+  // File extension of the request
+  const fileExtension = pathname.split('.').pop() ?? '';
+
+  // Only allow requests for certain file types
   const allowedTypes = ['html', 'css', 'js'];
   if (!allowedTypes.includes(fileExtension)) {
-    return new Response('Nothing to see here!', { status: 403} );
+     return new Response('Nothing to see here!', { status: 403} );
   }
 
-  // Read fie and fileinfo
-  const file = await Deno.readFile(fileUrl);
-  const fileInfo = await Deno.stat(fileUrl);
+  // Construct safe file path
+  const filePath = `./public${pathname}`;
 
-  // Set last modified time
-  const lastModified = fileInfo.mtime?.toUTCString(); 
-
-  // Headers for different file types 
-  const fileHeaders = {
-    html: {
-      type: 'text/html', 
-      cache: 'public, max-age=60, must-revalidate', 
-      modified: lastModified
-    }, 
-    js: {
-      type: 'application/javascript',
-      cache: 'public, max-age=86400, must-revalidate',
-      modified: lastModified
-    }, 
-    css: {
-      type: 'text/css',
-      cache: 'public, max-age=86400, must-revalidate',
-      modified: lastModified
-    }
-  };
-
-
-
+  // Serve static files
+  try {
+    return await serveFile(req, filePath);
+  } catch {
+    return new Response("File not found!", { status: 404});
+  }
+  
 };
 
 export { staticHandler };
