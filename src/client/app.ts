@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // If status is not ok, abort
         if (apiData.status !== 'OK') return;
 
-        // Handle new and moved vehicles
+        // Handle new and moving vehicles
         Object.entries(apiData.vehiclesById).forEach(([id, vehicle]) => {
 
             // Reference to leaflet marker
@@ -41,10 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 marker = L.marker([vehicle.latitude, vehicle.longitude])
                 .addTo(map)
                 .bindPopup(`Line: ${vehicle.lineref}<br>Calculating speed...`);
-            } else {
-                // Update vehicle position and popup when it has moved
+            } 
+
+            // Update vehicle position and popup
+            if (vehicle.hasMoved === true) {
                 marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-                marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: ${vehicle.speed} km/h `)
+                marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: ${vehicle.speed} km/h `);
+            } else {
+                marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: 0 km/h `);
             }
 
             // Store leaflet markers 
@@ -52,20 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         });
 
-        // Store id's of known vehicles and moved vehicles to an array
-        const knownVehicleIds: Array = Object.keys(markersByVehicleId);
-        const movedVehicleIds: Array = Object.keys(apiData.vehiclesById);
-
-        // Handle vehicles standing still
-        const standingVehicles = knownVehicleIds.filter((id) => !movedVehicleIds.includes(id));
-        console.log('Standing vehicles');
-        console.log(standingVehicles);
-
-
     };
 
 });
-
 
 
 // When websocket connection has been opened

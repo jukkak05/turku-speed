@@ -20,19 +20,17 @@ document.addEventListener("DOMContentLoaded", () => {
           vehicle.latitude,
           vehicle.longitude
         ]).addTo(map).bindPopup(`Line: ${vehicle.lineref}<br>Calculating speed...`);
-      } else {
+      }
+      if (vehicle.hasMoved === true) {
         marker.setLatLng([
           vehicle.latitude,
           vehicle.longitude
         ]);
         marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: ${vehicle.speed} km/h `);
+      } else {
+        marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: 0 km/h `);
       }
       markersByVehicleId[id] = marker;
     });
-    const knownVehicleIds = Object.keys(markersByVehicleId);
-    const movedVehicleIds = Object.keys(apiData.vehiclesById);
-    const standingVehicles = knownVehicleIds.filter((id) => !movedVehicleIds.includes(id));
-    console.log("Standing vehicles");
-    console.log(standingVehicles);
   };
 });

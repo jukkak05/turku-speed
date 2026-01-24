@@ -121,20 +121,9 @@ const fetchVehicles = async (): Promise<void> => {
 
     });
 
-    // Object for moved vehicles
-    const movedVehicles: CachedVehicles = {
-        status: cachedVehicles. status,
-        servertime: cachedVehicles. servertime, 
-        vehiclesById: Object.fromEntries(
-            // Filter array of cachedVehicles to check if vehicle has moved
-            Object.entries(cachedVehicles.vehiclesById)
-            .filter(([_, vehicle]) => vehicle.hasMoved === true),
-        ),
-    };
-
-    // Broadcast moved vehicles to websocket connections
+    // Broadcast vehicles to websocket connections
     connectedSockets.forEach((socket) => {
-        socket.send(JSON.stringify(movedVehicles));
+        socket.send(JSON.stringify(cachedVehicles));
     });
 
   } catch (err) {
