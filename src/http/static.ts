@@ -1,4 +1,4 @@
-import { serveFile } from "@std/http/file-server";
+import { serveFile } from "@std/http";
 
 const staticHandler = async (req: Request, url: URL): Promise<Response> => {
 

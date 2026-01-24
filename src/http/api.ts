@@ -1,16 +1,16 @@
 
-// Import function to get vehicles and set for websockets
+// Import getVehicles function and connectedSockets set
 import { getVehicles, connectedSockets } from "../services/foliService.ts";
 
 // Handle API requests
 const apiHandler = (req: Request): Response => {
 
-    // If request is not websocket, reject with upgrade required code
+    // If request is not websocket, reject with upgrade required status code
     if (req.headers.get('upgrade') != 'websocket') {
         return new Response(null, { status: 426 });
     }
 
-    // Upgrade request to websocket
+    // Upgrade http request to websocket
     const { socket, response } = Deno.upgradeWebSocket(req);
 
     // Set up websocket event listeners

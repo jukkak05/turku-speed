@@ -31,9 +31,10 @@ type CachedVehicle = {
     oldtimestamp?: number; 
     oldLat?: number; 
     oldLon?: number;
-    travelledTime: number; 
-    travelledDistance: number; 
-    speed: number; 
+    travelledTime?: number; 
+    travelledDistance?: number; 
+    speed?: number; 
+    hasMoved?: boolean;  
 }
 
 // Object to store cached vehicles
@@ -59,7 +60,7 @@ const fetchVehicles = async (): Promise<void> => {
     const data = (await res.json() as ApiResponse); 
     console.log("New vehicles data fetched");
 
-    // Add response status and servertime to vehicles
+    // Add response status and servertime to cachedVehicles
     cachedVehicles.status = data.status ?? undefined; 
     cachedVehicles.servertime = data.servertime ?? null;  
 
@@ -84,8 +85,11 @@ const fetchVehicles = async (): Promise<void> => {
             return; 
         } 
 
-        // Abort if vehicle has stayed still
-        if (cachedVeh.latitude === vehicle.latitude && cachedVeh.longitude === vehicle.longitude) return; 
+        // Abort if vehicle has stayed still and set hasMoved property to false
+        if (cachedVeh.latitude === vehicle.latitude && cachedVeh.longitude === vehicle.longitude) {
+            cachedVeh.hasMoved = false; 
+            return; 
+        }
     
         // Update vehicle details on cachedVehicles
         cachedVeh.lineref = vehicle.lineref; 
@@ -95,6 +99,7 @@ const fetchVehicles = async (): Promise<void> => {
         cachedVeh.longitude = vehicle.longitude; 
         cachedVeh.oldtimestamp = cachedVeh.timestamp;
         cachedVeh.timestamp = vehicle.recordedattime;
+        cachedVeh.hasMoved = true; 
 
         // Calculate time in seconds that the vehicle has travelled
         cachedVeh.travelledTime = calculateTravellingTime(vehicle.recordedattime, cachedVeh.oldtimestamp);
@@ -116,26 +121,36 @@ const fetchVehicles = async (): Promise<void> => {
 
     });
 
-    // Broadcast vehicles to websocket connections
+    // Object for moved vehicles
+    const movedVehicles: CachedVehicles = {
+        status: cachedVehicles. status,
+        servertime: cachedVehicles. servertime, 
+        vehiclesById: Object.fromEntries(
+            // Filter array of cachedVehicles to check if vehicle has moved
+            Object.entries(cachedVehicles.vehiclesById)
+            .filter(([_, vehicle]) => vehicle.hasMoved === true),
+        ),
+    };
+
+    // Broadcast moved vehicles to websocket connections
     connectedSockets.forEach((socket) => {
-        socket.send(JSON.stringify(cachedVehicles));
+        socket.send(JSON.stringify(movedVehicles));
     });
-    
+
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);
   }
 
 } 
 
-function startPolling() {
+export function startPolling() {
     // Fetch vehicles on startup
     fetchVehicles(); 
     // Then fetch vehicles once every 5 seconds
     setInterval(fetchVehicles, 5000);
 }
 
-function getVehicles() {
+export function getVehicles() {
     return cachedVehicles;
 }
 
-export { startPolling, getVehicles };
