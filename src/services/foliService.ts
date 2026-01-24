@@ -17,7 +17,7 @@ type ApiVehicle = {
 }
 
 // Vehicle Cache Types
-type CachedVehicles = {
+export type CachedVehicles = {
     status: string | undefined;
     servertime: number | null;
     vehiclesById: Record<VehicleId, CachedVehicle>;

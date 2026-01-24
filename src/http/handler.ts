@@ -8,7 +8,6 @@ const requestHandler = async (req: Request): Promise<Response> => {
 
   // Handle requests based on pathname
   if (url.pathname === "/api/vehicles") {
-    console.log(req.headers);
     // Handle api requests
     return apiHandler(req);
   } else {

@@ -10,6 +10,11 @@ const apiHandler = (req: Request): Response => {
         return new Response(null, { status: 426 });
     }
 
+    // If request is not from localhost, reject 
+    if (req.headers.get('origin') !== 'http://localhost:8080') {
+        return new Response(null, { status: 404});
+    }
+
     // Upgrade http request to websocket
     const { socket, response } = Deno.upgradeWebSocket(req);
 
