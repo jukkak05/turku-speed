@@ -1,7 +1,9 @@
-/// <reference types="leaflet" />
+// Type declaration for Leaflet
+import type * as Leaflet from "leaflet";
+declare const L: typeof Leaflet;
 
 // Import cachedVehicles type
-import { CachedVehicles, getVehicles } from "../services/foliService.ts";
+import { CachedVehicles } from "../services/foliService.ts";
 
 // Object to store leaflet markers
 const markersByVehicleId: Record<string, L.Marker> = {};
@@ -10,7 +12,7 @@ const markersByVehicleId: Record<string, L.Marker> = {};
 document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize leaflet map
-    var map = L.map('map').setView([60.4516703550171, 22.248231325628893], 13);
+    const map = L.map('map').setView([60.4516703550171, 22.248231325628893], 13);
 
     // Add open street map tile layer
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -59,9 +61,3 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 });
-
-
-// When websocket connection has been opened
-// websocket.onopen = () => {
-//     console.log('Connection opened!');
-// };
