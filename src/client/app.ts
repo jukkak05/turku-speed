@@ -42,15 +42,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!marker) {
                 marker = L.marker([vehicle.latitude, vehicle.longitude])
                 .addTo(map)
-                .bindPopup(`Line: ${vehicle.lineref}<br>Calculating speed...`);
+                .bindPopup(`Line: ${vehicle.lineref}<br>Nppeutta lasketaan...`);
             } 
 
             // Update vehicle position and popup
             if (vehicle.hasMoved === true) {
                 marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-                marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: ${vehicle.speed} km/h `);
+                marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: ${vehicle.speed} km/h `);
             } else {
-                marker.setPopupContent(`Line: ${vehicle.lineref}<br>Speed: 0 km/h `);
+                marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: 0 km/h `);
             }
 
             // Store leaflet markers 
@@ -59,5 +59,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     };
+
+    // Dark mode
+    let darkmode = false; 
+    document.getElementById('dark-mode')?.addEventListener('click', (e) => {
+        
+        const button = e.currentTarget as HTMLButtonElement;
+
+        if (darkmode === false) {
+            document.querySelector('main')!.style.background = '#000000';
+            document.querySelector('h1')!.style.color = '#ffffff';
+            const paragraphs =  document.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                p.style.color = '#ffffff';
+            });
+            darkmode = true; 
+            button.innerHTML = 'Go FÖLI';
+        } else {
+            document.querySelector('main')!.style.background = '#f0b323';
+            document.querySelector('h1')!.style.color = '#000000';
+            const paragraphs =  document.querySelectorAll('p');
+            paragraphs.forEach(p => {
+                p.style.color = '#000000';
+            });
+            darkmode = false;
+            button.innerHTML = 'Go Dark'; 
+        }
+      
+    });
 
 });

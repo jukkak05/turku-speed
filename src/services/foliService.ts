@@ -20,6 +20,7 @@ type ApiVehicle = {
 export type CachedVehicles = {
     status: string | undefined;
     servertime: number | null;
+    lineRefs: Set<string>;
     vehiclesById: Record<VehicleId, CachedVehicle>;
 }
 type VehicleId = string; 
@@ -41,6 +42,7 @@ type CachedVehicle = {
 const cachedVehicles: CachedVehicles = {
     status: undefined, 
     servertime: null,
+    lineRefs: new Set<string>(),
     vehiclesById: {},
 }
 
@@ -66,6 +68,9 @@ const fetchVehicles = async (): Promise<void> => {
 
     // Handle each vehicle 
     Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
+
+        // Add lineref to set
+        cachedVehicles.lineRefs.add(vehicle.lineref);
 
         // Reference to cached vehicle 
         let cachedVeh = cachedVehicles.vehiclesById[id];
@@ -125,6 +130,8 @@ const fetchVehicles = async (): Promise<void> => {
     connectedSockets.forEach((socket) => {
         socket.send(JSON.stringify(cachedVehicles));
     });
+
+    console.log(cachedVehicles);
 
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);

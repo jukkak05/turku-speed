@@ -24,18 +24,12 @@
         <span>föli</span>speed
       </h1>
       <div id="map"></div>
-      <details>
-        <summary>Mikä?</summary>
-        <p>Selitys tulee tähän....</p>
-      </details>
-      <details>
-        <summary>Miksi?</summary>
-        <p>Selitys tulee tähän....</p>
-      </details>
-      <details>
-        <summary>Miten?</summary>
-        <p>Selitys tulee tähän....</p>
-      </details>
+        <p>
+          Sovellus näyttää Turun joukkoliikenteen bussien nopeuden ja sijainnin kartalla.<br><br>
+          Tiedot päivitetään 5 sekunnin välein Fölin avoimesta rajapinnasta: <a href="https://data.foli.fi/doc/index" target="_blank">https://data.foli.fi/doc/index</a><br><br>
+          Nopeus lasketaan sijaintikoordinaattien (leveys, pituus) ja aikaleimojen avulla. Koordinaattien välinen etäisyys on laskettu geolib kirjaston avulla: <a href="https://www.npmjs.com/package/geolib" target="_blank">https://www.npmjs.com/package/geolib</a> 
+        </p>
+        <button id="dark-mode">Go dark</button>
     </main>
   </body>
 </html>
