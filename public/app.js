@@ -10,9 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   const websocket = new WebSocket("/api/vehicles");
+  websocket.onopen = (e) => {
+  };
   websocket.onmessage = (e) => {
     const apiData = JSON.parse(e.data);
     if (apiData.status !== "OK") return;
+    apiData.lineRefs.forEach((lineref) => {
+      if (!Array.from(document.querySelectorAll("button")).some((button) => button.textContent?.trim() === lineref)) {
+        const buttonElement = document.createElement("button");
+        buttonElement.textContent = lineref;
+        const lineRefButtons = document.getElementById("lineref-buttons");
+        lineRefButtons?.appendChild(buttonElement);
+      }
+    });
     Object.entries(apiData.vehiclesById).forEach(([id, vehicle]) => {
       let marker = markersByVehicleId[id];
       if (!marker) {

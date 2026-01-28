@@ -20,7 +20,7 @@ type ApiVehicle = {
 export type CachedVehicles = {
     status: string | undefined;
     servertime: number | null;
-    lineRefs: Set<string>;
+    lineRefs: Array<string>;
     vehiclesById: Record<VehicleId, CachedVehicle>;
 }
 type VehicleId = string; 
@@ -42,7 +42,7 @@ type CachedVehicle = {
 const cachedVehicles: CachedVehicles = {
     status: undefined, 
     servertime: null,
-    lineRefs: new Set<string>(),
+    lineRefs: [],
     vehiclesById: {},
 }
 
@@ -69,8 +69,10 @@ const fetchVehicles = async (): Promise<void> => {
     // Handle each vehicle 
     Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
 
-        // Add lineref to set
-        cachedVehicles.lineRefs.add(vehicle.lineref);
+        // Add lineref to lineRefs array
+        if (!cachedVehicles.lineRefs.includes(vehicle.lineref)) {
+            cachedVehicles.lineRefs.push(vehicle.lineref);
+        }
 
         // Reference to cached vehicle 
         let cachedVeh = cachedVehicles.vehiclesById[id];
@@ -125,13 +127,12 @@ const fetchVehicles = async (): Promise<void> => {
         cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
     });
+    
 
     // Broadcast vehicles to websocket connections
     connectedSockets.forEach((socket) => {
         socket.send(JSON.stringify(cachedVehicles));
     });
-
-    console.log(cachedVehicles);
 
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);

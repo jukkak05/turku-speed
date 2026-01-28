@@ -23,14 +23,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Create websocket connection to the api server
     const websocket = new WebSocket('/api/vehicles');
 
+    websocket.onopen = (e) => {
+        
+    }
+
     // Websocket on message event
     websocket.onmessage = (e) => {
-
+        
         // Parse json data
         const apiData = JSON.parse(e.data) as CachedVehicles;
         
         // If status is not ok, abort
         if (apiData.status !== 'OK') return;
+
+        // Add button for each lineref to show/hide it's vehicles
+        apiData.lineRefs.forEach(lineref => {
+
+            // Only if lineref button is not already on page
+            if (!Array.from(document.querySelectorAll('button')).some(button => button.textContent?.trim() === lineref)) {
+                const buttonElement = document.createElement('button');
+                buttonElement.textContent = lineref; 
+                const lineRefButtons = document.getElementById('lineref-buttons')
+                lineRefButtons?.appendChild(buttonElement);
+            }
+           
+        });
 
         // Handle new and moving vehicles
         Object.entries(apiData.vehiclesById).forEach(([id, vehicle]) => {
