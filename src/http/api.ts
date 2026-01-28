@@ -26,7 +26,7 @@ const apiHandler = (req: Request): Response => {
         // Add socket to set of websockets
         connectedSockets.add(socket);
     }
-    socket.onmessage = (event) => {
+    socket.onmessage = (event: MessageEvent) => {
         console.log("WebSocket message: ", event);
     }
     socket.onclose = () => {
@@ -34,8 +34,8 @@ const apiHandler = (req: Request): Response => {
         // Remove socket from set of websockets
         connectedSockets.delete(socket);
     };
-    socket.onerror = (event) => {
-        console.log("WebSocket error: ", event);
+    socket.onerror = (error: Event) => {
+        console.log("WebSocket error: ", error);
     }
 
     // Return http response for websocket upgrade
