@@ -20,12 +20,13 @@ type ApiVehicle = {
 export type CachedVehicles = {
     status: string | undefined;
     servertime: number | null;
-    lineRefs: Array<string>;
-    vehiclesById: Record<VehicleId, CachedVehicle>;
+    lineRefs: Record<lineRef, 
+        Record<VehicleId, CachedVehicle>
+    >;
 }
+type lineRef = string;
 type VehicleId = string; 
 type CachedVehicle = {
-    lineref: string; 
     latitude: number;
     longitude: number; 
     timestamp: number;
@@ -42,8 +43,8 @@ type CachedVehicle = {
 const cachedVehicles: CachedVehicles = {
     status: undefined, 
     servertime: null,
-    lineRefs: [],
-    vehiclesById: {},
+    lineRefs: {
+    }    
 }
 
 // Function to fetch vehicles 
@@ -69,29 +70,27 @@ const fetchVehicles = async (): Promise<void> => {
     // Handle each vehicle 
     Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
 
-        // Add lineref to lineRefs array
-        if (!cachedVehicles.lineRefs.includes(vehicle.lineref)) {
-            cachedVehicles.lineRefs.push(vehicle.lineref);
+        // Add lineref object to cachedVehicles 
+        if (!(vehicle.lineref in cachedVehicles.lineRefs)) {
+            cachedVehicles.lineRefs[vehicle.lineref] = {};
         }
 
-        // Reference to cached vehicle 
-        let cachedVeh = cachedVehicles.vehiclesById[id];
-        
         // Abort if vehicle does not have coordinates
         if (vehicle.longitude == null || vehicle.latitude == null) return; 
-        
-        // Add new vehicle details to cachedVehicles
-        if (!cachedVeh) {
-            cachedVeh = {
-                lineref: vehicle.lineref, 
+
+        // Add new vehicle object to cachedVehicles 
+        if (!(id in cachedVehicles.lineRefs[vehicle.lineref])) {
+            cachedVehicles.lineRefs[vehicle.lineref][id] = {
                 latitude: vehicle.latitude, 
                 longitude: vehicle.longitude, 
                 timestamp: vehicle.recordedattime
-            };
-            cachedVehicles.vehiclesById[id] = cachedVeh;
+            }
             return; 
-        } 
+        }
 
+        // Reference to cached vehicle
+        const cachedVeh = cachedVehicles.lineRefs[vehicle.lineref][id];
+        
         // Abort if vehicle has stayed still and set hasMoved property to false
         if (cachedVeh.latitude === vehicle.latitude && cachedVeh.longitude === vehicle.longitude) {
             cachedVeh.hasMoved = false; 
@@ -99,7 +98,6 @@ const fetchVehicles = async (): Promise<void> => {
         }
     
         // Update vehicle details on cachedVehicles
-        cachedVeh.lineref = vehicle.lineref; 
         cachedVeh.oldLat = cachedVeh.latitude; 
         cachedVeh.oldLon = cachedVeh.longitude;
         cachedVeh.latitude = vehicle.latitude; 
@@ -126,8 +124,10 @@ const fetchVehicles = async (): Promise<void> => {
         // Calculate speed in km/h that the vehicle has travelled
         cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
+        // Re-assign vehicle in cachedVehicles
+        cachedVehicles.lineRefs[vehicle.lineref][id] = cachedVeh; 
+
     });
-    
 
     // Broadcast vehicles to websocket connections
     connectedSockets.forEach((socket) => {

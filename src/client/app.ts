@@ -5,8 +5,11 @@ declare const L: typeof Leaflet;
 // Import cachedVehicles type
 import { CachedVehicles } from "../services/foliService.ts";
 
-// Object to store leaflet markers
-const markersByVehicleId: Record<string, L.Marker> = {};
+// Object to store markersByVehicleId
+var markersByVehicleId = {};
+
+// Object to store leaflet groups with markers
+const groupsByLineref: Record<string, L.LayerGroup<L.Marker>> = {};
 
 // Event listener for dom content loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -23,10 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Create websocket connection to the api server
     const websocket = new WebSocket('/api/vehicles');
 
-    websocket.onopen = (e) => {
-        
-    }
-
     // Websocket on message event
     websocket.onmessage = (e) => {
         
@@ -36,43 +35,52 @@ document.addEventListener("DOMContentLoaded", () => {
         // If status is not ok, abort
         if (apiData.status !== 'OK') return;
 
-        // Add button for each lineref to show/hide it's vehicles
-        apiData.lineRefs.forEach(lineref => {
+        // Loop over each lineref
+        Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
 
-            // Only if lineref button is not already on page
+            // Add lineref buttons to page
             if (!Array.from(document.querySelectorAll('button')).some(button => button.textContent?.trim() === lineref)) {
                 const buttonElement = document.createElement('button');
                 buttonElement.textContent = lineref; 
                 const lineRefButtons = document.getElementById('lineref-buttons')
                 lineRefButtons?.appendChild(buttonElement);
             }
-           
-        });
 
-        // Handle new and moving vehicles
-        Object.entries(apiData.vehiclesById).forEach(([id, vehicle]) => {
+            // Create and store Leaflet layer group for lineref
+            const linerefGroup = groupsByLineref[lineref] ?? (groupsByLineref[lineref] = L.layerGroup());
 
-            // Reference to leaflet marker
-            let marker = markersByVehicleId[id];
+            // Loop over each vehicle
+            Object.entries(vehicleIds).forEach(([id, vehicle]) => {
+                
+                // Store new vehicles and add them to map
+                let marker = markersByVehicleId[id];
+                if (!marker) {
+                    marker = L.marker([vehicle.latitude, vehicle.longitude])
+                    .bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+                }
+        
+                // Update vehicle position and popup
+                if (vehicle.hasMoved === true) {
+                    marker.setLatLng([vehicle.latitude, vehicle.longitude]);
+                    marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+                } else {
+                    marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+                }
 
-            // Store new vehicles and add them to map
-            if (!marker) {
-                marker = L.marker([vehicle.latitude, vehicle.longitude])
-                .addTo(map)
-                .bindPopup(`Line: ${vehicle.lineref}<br>Nppeutta lasketaan...`);
-            } 
+                // Store leaflet markers 
+                markersByVehicleId[id] = marker; 
+                linerefGroup.addLayer(marker);
 
-            // Update vehicle position and popup
-            if (vehicle.hasMoved === true) {
-                marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-                marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: ${vehicle.speed} km/h `);
-            } else {
-                marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: 0 km/h `);
-            }
+                // Add group to map
+                if (!map.hasLayer(linerefGroup)) {
+                    linerefGroup.addTo(map);
+                }
 
-            // Store leaflet markers 
-            markersByVehicleId[id] = marker; 
+            });
 
+            // console.log(markersByVehicleId);
+            // console.log(groupsByLineref);
+            
         });
 
     };

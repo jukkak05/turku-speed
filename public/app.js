@@ -1,5 +1,6 @@
 // src/client/app.ts
 var markersByVehicleId = {};
+var groupsByLineref = {};
 document.addEventListener("DOMContentLoaded", () => {
   const map = L.map("map").setView([
     60.4516703550171,
@@ -10,37 +11,40 @@ document.addEventListener("DOMContentLoaded", () => {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   const websocket = new WebSocket("/api/vehicles");
-  websocket.onopen = (e) => {
-  };
   websocket.onmessage = (e) => {
     const apiData = JSON.parse(e.data);
     if (apiData.status !== "OK") return;
-    apiData.lineRefs.forEach((lineref) => {
+    Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
       if (!Array.from(document.querySelectorAll("button")).some((button) => button.textContent?.trim() === lineref)) {
         const buttonElement = document.createElement("button");
         buttonElement.textContent = lineref;
         const lineRefButtons = document.getElementById("lineref-buttons");
         lineRefButtons?.appendChild(buttonElement);
       }
-    });
-    Object.entries(apiData.vehiclesById).forEach(([id, vehicle]) => {
-      let marker = markersByVehicleId[id];
-      if (!marker) {
-        marker = L.marker([
-          vehicle.latitude,
-          vehicle.longitude
-        ]).addTo(map).bindPopup(`Line: ${vehicle.lineref}<br>Nppeutta lasketaan...`);
-      }
-      if (vehicle.hasMoved === true) {
-        marker.setLatLng([
-          vehicle.latitude,
-          vehicle.longitude
-        ]);
-        marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: ${vehicle.speed} km/h `);
-      } else {
-        marker.setPopupContent(`Linja: ${vehicle.lineref}<br>Nopeus: 0 km/h `);
-      }
-      markersByVehicleId[id] = marker;
+      const linerefGroup = groupsByLineref[lineref] ?? (groupsByLineref[lineref] = L.layerGroup());
+      Object.entries(vehicleIds).forEach(([id, vehicle]) => {
+        let marker = markersByVehicleId[id];
+        if (!marker) {
+          marker = L.marker([
+            vehicle.latitude,
+            vehicle.longitude
+          ]).bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+        }
+        if (vehicle.hasMoved === true) {
+          marker.setLatLng([
+            vehicle.latitude,
+            vehicle.longitude
+          ]);
+          marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+        } else {
+          marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+        }
+        markersByVehicleId[id] = marker;
+        linerefGroup.addLayer(marker);
+        if (!map.hasLayer(linerefGroup)) {
+          linerefGroup.addTo(map);
+        }
+      });
     });
   };
   let darkmode = false;
