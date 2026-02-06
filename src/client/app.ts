@@ -6,10 +6,13 @@ declare const L: typeof Leaflet;
 import { CachedVehicles } from "../services/foliService.ts";
 
 // Object to store markersByVehicleId
-var markersByVehicleId = {};
+const markersByVehicleId = {};
 
-// Object to store leaflet groups with markers
+// Object to store leaflet groups by lineref with markers
 const groupsByLineref: Record<string, L.LayerGroup<L.Marker>> = {};
+
+// Set to store hidden linerefs
+const hiddenLinerefs = new Set<string>();
 
 // Event listener for dom content loaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -38,14 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Loop over each lineref
         Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
 
-            // Add lineref buttons to page
-            if (!Array.from(document.querySelectorAll('button')).some(button => button.textContent?.trim() === lineref)) {
-                const buttonElement = document.createElement('button');
-                buttonElement.textContent = lineref; 
-                const lineRefButtons = document.getElementById('lineref-buttons')
-                lineRefButtons?.appendChild(buttonElement);
-            }
-
             // Create and store Leaflet layer group for lineref
             const linerefGroup = groupsByLineref[lineref] ?? (groupsByLineref[lineref] = L.layerGroup());
 
@@ -67,13 +62,34 @@ document.addEventListener("DOMContentLoaded", () => {
                     marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
                 }
 
-                // Store leaflet markers 
+                // Store leaflet marker and layer group
                 markersByVehicleId[id] = marker; 
                 linerefGroup.addLayer(marker);
 
-                // Add group to map
-                if (!map.hasLayer(linerefGroup)) {
-                    linerefGroup.addTo(map);
+                // Add layer group to map
+                if (!map.hasLayer(linerefGroup) && !hiddenLinerefs.has(lineref)) {
+                    map.addLayer(linerefGroup);
+                }
+
+                // Add lineref buttons to page
+                if (!Array.from(document.querySelectorAll('button')).some(button => button.textContent?.trim() === lineref)) {
+                    
+                    const buttonElement = document.createElement('button');
+                    buttonElement.textContent = lineref; 
+                    const lineRefButtons = document.getElementById('lineref-buttons')
+                    lineRefButtons?.appendChild(buttonElement);
+
+                    // Button on click event 
+                    buttonElement.addEventListener('click', () => {
+
+                       map.eachLayer(function(layer){
+                            if (layer !== linerefGroup && !(layer instanceof L.TileLayer)) {
+                                map.removeLayer(layer);
+                            }
+                       });
+
+                    });
+
                 }
 
             });

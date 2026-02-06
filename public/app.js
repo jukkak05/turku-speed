@@ -1,6 +1,7 @@
 // src/client/app.ts
 var markersByVehicleId = {};
 var groupsByLineref = {};
+var hiddenLinerefs = /* @__PURE__ */ new Set();
 document.addEventListener("DOMContentLoaded", () => {
   const map = L.map("map").setView([
     60.4516703550171,
@@ -15,12 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const apiData = JSON.parse(e.data);
     if (apiData.status !== "OK") return;
     Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
-      if (!Array.from(document.querySelectorAll("button")).some((button) => button.textContent?.trim() === lineref)) {
-        const buttonElement = document.createElement("button");
-        buttonElement.textContent = lineref;
-        const lineRefButtons = document.getElementById("lineref-buttons");
-        lineRefButtons?.appendChild(buttonElement);
-      }
       const linerefGroup = groupsByLineref[lineref] ?? (groupsByLineref[lineref] = L.layerGroup());
       Object.entries(vehicleIds).forEach(([id, vehicle]) => {
         let marker = markersByVehicleId[id];
@@ -41,8 +36,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         markersByVehicleId[id] = marker;
         linerefGroup.addLayer(marker);
-        if (!map.hasLayer(linerefGroup)) {
-          linerefGroup.addTo(map);
+        if (!map.hasLayer(linerefGroup) && !hiddenLinerefs.has(lineref)) {
+          map.addLayer(linerefGroup);
+        }
+        if (!Array.from(document.querySelectorAll("button")).some((button) => button.textContent?.trim() === lineref)) {
+          const buttonElement = document.createElement("button");
+          buttonElement.textContent = lineref;
+          const lineRefButtons = document.getElementById("lineref-buttons");
+          lineRefButtons?.appendChild(buttonElement);
+          buttonElement.addEventListener("click", () => {
+            map.eachLayer(function(layer) {
+              if (layer !== linerefGroup && !(layer instanceof L.TileLayer)) {
+                map.removeLayer(layer);
+              }
+            });
+          });
         }
       });
     });
