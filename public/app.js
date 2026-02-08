@@ -1,7 +1,7 @@
 // src/client/app.ts
-var markersByVehicleId = {};
-var groupsByLineref = {};
-var hiddenLinerefs = /* @__PURE__ */ new Set();
+var markersByVehicleId = /* @__PURE__ */ new Map();
+var groupsByLineref = /* @__PURE__ */ new Map();
+var activeLineRefs = /* @__PURE__ */ new Set();
 document.addEventListener("DOMContentLoaded", () => {
   const map = L.map("map").setView([
     60.4516703550171,
@@ -13,45 +13,73 @@ document.addEventListener("DOMContentLoaded", () => {
   }).addTo(map);
   const websocket = new WebSocket("/api/vehicles");
   websocket.onmessage = (e) => {
-    const apiData = JSON.parse(e.data);
-    if (apiData.status !== "OK") return;
-    Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
-      const linerefGroup = groupsByLineref[lineref] ?? (groupsByLineref[lineref] = L.layerGroup());
-      Object.entries(vehicleIds).forEach(([id, vehicle]) => {
-        let marker = markersByVehicleId[id];
-        if (!marker) {
-          marker = L.marker([
-            vehicle.latitude,
-            vehicle.longitude
-          ]).bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+    try {
+      const apiData = JSON.parse(e.data);
+      if (apiData.status !== "OK") return;
+      Object.entries(apiData.lineRefs).forEach(([lineref, vehicleIds]) => {
+        let linerefGroup = groupsByLineref.get(lineref);
+        if (!linerefGroup) {
+          linerefGroup = L.layerGroup();
+          groupsByLineref.set(lineref, linerefGroup);
         }
-        if (vehicle.hasMoved === true) {
-          marker.setLatLng([
-            vehicle.latitude,
-            vehicle.longitude
-          ]);
-          marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+        Object.entries(vehicleIds).forEach(([id, vehicle]) => {
+          let marker = markersByVehicleId.get(id);
+          if (!marker) {
+            marker = L.marker([
+              vehicle.latitude,
+              vehicle.longitude
+            ]).bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+            markersByVehicleId.set(id, marker);
+            linerefGroup.addLayer(marker);
+            map.addLayer(linerefGroup);
+            return;
+          }
+          if (vehicle.hasMoved === true) {
+            marker.setLatLng([
+              vehicle.latitude,
+              vehicle.longitude
+            ]);
+            marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+          } else {
+            marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+          }
+          markersByVehicleId.set(id, marker);
+        });
+      });
+    } catch (err) {
+      console.error("Failed to handle api data: ", err);
+    }
+    const lineRefButtons = Array.from(document.querySelectorAll("button"));
+    groupsByLineref.forEach((_, lineref) => {
+      if (!lineRefButtons.some((button) => button.textContent?.trim() === lineref)) {
+        const buttonElement = document.createElement("button");
+        buttonElement.textContent = lineref;
+        const lineRefButtonsContainer = document.getElementById("lineref-buttons");
+        lineRefButtonsContainer?.appendChild(buttonElement);
+      }
+    });
+    lineRefButtons.forEach((button) => {
+      button.addEventListener("click", (e2) => {
+        document.getElementById("all-linerefs")?.classList.remove("active");
+        const target = e2.currentTarget;
+        const buttonLineRef = target?.textContent?.trim() ?? "";
+        if (!target?.classList.contains("active")) {
+          target?.classList.add("active");
+          activeLineRefs.add(buttonLineRef);
         } else {
-          marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+          target?.classList.remove("active");
+          activeLineRefs.delete(buttonLineRef);
         }
-        markersByVehicleId[id] = marker;
-        linerefGroup.addLayer(marker);
-        if (!map.hasLayer(linerefGroup) && !hiddenLinerefs.has(lineref)) {
-          map.addLayer(linerefGroup);
-        }
-        if (!Array.from(document.querySelectorAll("button")).some((button) => button.textContent?.trim() === lineref)) {
-          const buttonElement = document.createElement("button");
-          buttonElement.textContent = lineref;
-          const lineRefButtons = document.getElementById("lineref-buttons");
-          lineRefButtons?.appendChild(buttonElement);
-          buttonElement.addEventListener("click", () => {
-            map.eachLayer(function(layer) {
-              if (layer !== linerefGroup && !(layer instanceof L.TileLayer)) {
-                map.removeLayer(layer);
-              }
-            });
-          });
-        }
+        map.eachLayer((layer) => {
+          if (!(layer instanceof L.TileLayer)) {
+            map.removeLayer(layer);
+          }
+        });
+        groupsByLineref.forEach((layerGroup, lineref) => {
+          if (activeLineRefs.has(lineref)) {
+            map.addLayer(layerGroup);
+          }
+        });
       });
     });
   };
