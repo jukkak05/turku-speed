@@ -101,27 +101,16 @@ function allLineRefsButton(map) {
   });
 }
 function darkmode() {
-  let darkmode2 = false;
-  document.getElementById("dark-mode")?.addEventListener("click", (e) => {
-    const button = e.currentTarget;
-    if (darkmode2 === false) {
-      document.querySelector("main").style.background = "#000000";
-      document.querySelector("h1").style.color = "#ffffff";
-      const paragraphs = document.querySelectorAll("p");
-      paragraphs.forEach((p) => {
-        p.style.color = "#ffffff";
-      });
-      darkmode2 = true;
-      button.innerHTML = "Go F\xD6LI";
-    } else {
-      document.querySelector("main").style.background = "#f0b323";
-      document.querySelector("h1").style.color = "#000000";
-      const paragraphs = document.querySelectorAll("p");
-      paragraphs.forEach((p) => {
-        p.style.color = "#000000";
-      });
-      darkmode2 = false;
-      button.innerHTML = "Go Dark";
-    }
+  const darkButton = document.getElementById("go-dark");
+  const dayButton = document.getElementById("go-day");
+  darkButton?.addEventListener("click", () => {
+    darkButton?.classList.add("hidden");
+    dayButton?.classList.remove("hidden");
+    document.body.classList.add("dark");
+  });
+  dayButton?.addEventListener("click", () => {
+    dayButton?.classList.add("hidden");
+    darkButton?.classList.remove("hidden");
+    document.body.classList.remove("dark");
   });
 }

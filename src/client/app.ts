@@ -163,33 +163,18 @@ function allLineRefsButton(map: L.Map) {
 }
 
 function darkmode() {
+    const darkButton = document.getElementById('go-dark'); 
+    const dayButton = document.getElementById('go-day'); 
 
-    // Dark mode
-    let darkmode = false; 
-    document.getElementById('dark-mode')?.addEventListener('click', (e) => {
-        
-        const button = e.currentTarget as HTMLButtonElement;
-
-        if (darkmode === false) {
-            document.querySelector('main')!.style.background = '#000000';
-            document.querySelector('h1')!.style.color = '#ffffff';
-            const paragraphs =  document.querySelectorAll('p');
-            paragraphs.forEach(p => {
-                p.style.color = '#ffffff';
-            });
-            darkmode = true; 
-            button.innerHTML = 'Go FÖLI';
-        } else {
-            document.querySelector('main')!.style.background = '#f0b323';
-            document.querySelector('h1')!.style.color = '#000000';
-            const paragraphs =  document.querySelectorAll('p');
-            paragraphs.forEach(p => {
-                p.style.color = '#000000';
-            });
-            darkmode = false;
-            button.innerHTML = 'Go Dark'; 
-        }
-      
+    darkButton?.addEventListener('click', () => {
+        darkButton?.classList.add('hidden');
+        dayButton?.classList.remove('hidden');
+        document.body.classList.add('dark');
     });
-
+    
+    dayButton?.addEventListener('click', () => {
+        dayButton?.classList.add('hidden');
+        darkButton?.classList.remove('hidden');
+        document.body.classList.remove('dark');
+    });
 }
