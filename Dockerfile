@@ -5,4 +5,4 @@ COPY ./app .
 RUN deno install --frozen
 
 EXPOSE 8000
-CMD ["deno", "run", "--cached-only", "--allow-net", "--allow-read", "main.ts"]
+CMD ["deno", "run", "--cached-only", "--allow-net", "--allow-read", "--allow-env", "--env-file", "main.ts"]

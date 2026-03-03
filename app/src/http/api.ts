@@ -12,11 +12,7 @@ const apiHandler = (req: Request): Response => {
 
     // Only allow websocket from localhost and app server
     const origin = req.headers.get('origin') ?? '';
-    const allowedOrigins = [ 
-        'http://localhost:8000', 
-        'http://77.42.92.245',
-        'https://folispeed.denoapp.dev'
-    ];
+    const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',');
     if (!allowedOrigins.includes(origin)) {
         return new Response(null, { status: 404});
     }
