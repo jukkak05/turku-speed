@@ -7,8 +7,8 @@ startPolling();
 // Serves HTTP requests with the given handler.
 // https://docs.deno.com/api/deno/~/Deno.serve
 Deno.serve({
-  hostname: "localhost",
-  port: 8080,
+  hostname: "0.0.0.0",
+  port: 8000,
 }, async (req) => {
   // Handle http request in handler
   return await requestHandler(req);

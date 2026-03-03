@@ -2,7 +2,7 @@ FROM denoland/deno:latest
 
 WORKDIR /app
 COPY ./app .
-RUN deno cache main.ts
+RUN deno install --frozen
 
 EXPOSE 8000
-CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "main.ts"]
+CMD ["deno", "run", "--cached-only", "--allow-net", "--allow-read", "main.ts"]
