@@ -5,13 +5,15 @@ import { getVehicles, connectedSockets } from "../services/foliService.ts";
 // Handle API requests
 const apiHandler = (req: Request): Response => {
 
+    console.log(req.headers.get('origin'));
+ 
     // If request is not websocket, reject with upgrade required status code
     if (req.headers.get('upgrade') != 'websocket') {
         return new Response(null, { status: 426 });
     }
 
     // If request is not from localhost, reject 
-    if (req.headers.get('origin') !== 'http://localhost:8080') {
+    if (req.headers.get('origin') !== 'http://localhost:8000') {
         return new Response(null, { status: 404});
     }
 
