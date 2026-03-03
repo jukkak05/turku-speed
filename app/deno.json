@@ -13,6 +13,6 @@
   },
   "compilerOptions": {
     "types": ["npm:@types/leaflet"],
-    "lib": ["dom", "dom.iterable", "esnext"]
+    "lib": ["deno.window", "deno.ns", "dom", "dom.iterable", "esnext"]
   }
 }

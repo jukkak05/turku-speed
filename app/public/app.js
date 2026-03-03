@@ -1,7 +1,7 @@
 // src/client/app.ts
-var markersByVehicleId = /* @__PURE__ */ new Map();
-var groupsByLineref = /* @__PURE__ */ new Map();
-var activeLineRefs = /* @__PURE__ */ new Set();
+const markersByVehicleId = /* @__PURE__ */ new Map();
+const groupsByLineref = /* @__PURE__ */ new Map();
+const activeLineRefs = /* @__PURE__ */ new Set();
 document.addEventListener("DOMContentLoaded", () => {
   const map = initializeLeafletMap();
   const websocket = new WebSocket("/api/vehicles");

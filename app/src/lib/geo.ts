@@ -20,7 +20,7 @@ type LatLon = { latitude: number; longitude: number};
 // index.load(items);
 
 // Function to calculate bbox around the vehicle
-function _buildBbox(lat, lon, delta = 0.00005) {
+function _buildBbox(lat: number, lon: number, delta = 0.00005) {
   const minLat = lat - delta;
   const maxLat = lat + delta;
   const minLon = lon - delta;

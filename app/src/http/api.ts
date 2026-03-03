@@ -4,16 +4,20 @@ import { getVehicles, connectedSockets } from "../services/foliService.ts";
 
 // Handle API requests
 const apiHandler = (req: Request): Response => {
-
-    console.log(req.headers.get('origin'));
  
     // If request is not websocket, reject with upgrade required status code
     if (req.headers.get('upgrade') != 'websocket') {
         return new Response(null, { status: 426 });
     }
 
-    // If request is not from localhost, reject 
-    if (req.headers.get('origin') !== 'http://localhost:8000') {
+    // Only allow websocket from localhost and app server
+    const origin = req.headers.get('origin') ?? '';
+    const allowedOrigins = [ 
+        'http://localhost:8000', 
+        'http://77.42.92.245',
+        'https://folispeed.denoapp.dev'
+    ];
+    if (!allowedOrigins.includes(origin)) {
         return new Response(null, { status: 404});
     }
 

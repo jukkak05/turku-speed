@@ -9,7 +9,7 @@ startPolling();
 Deno.serve({
   hostname: "0.0.0.0",
   port: 8000,
-}, async (req) => {
+}, async (req: Request) => {
   // Handle http request in handler
   return await requestHandler(req);
 });
