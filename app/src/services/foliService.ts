@@ -1,5 +1,9 @@
 // Import geo functions
 import { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed } from "../lib/geo.ts";
+
+// Import gzip 
+import { gzip } from "compress"
+
 // Export set for connected web sockets
 export const connectedSockets = new Set<WebSocket>(); 
 
@@ -19,12 +23,12 @@ type ApiVehicle = {
     longitude: number | null; 
     recordedattime: number; 
 }
+type VehiclesById = Record<VehicleId, CachedVehicle>;
+type VehiclesByLineRef = Record<LineRef, VehiclesById>;
 export type CachedVehicles = {
     status: string | undefined;
     servertime: number | null;
-    lineRefs: Record<LineRef, 
-        Record<VehicleId, CachedVehicle>
-    >;
+    lineRefs: VehiclesByLineRef; 
 }
 type CachedVehicle = {
     latitude: number;
@@ -49,21 +53,15 @@ const cachedVehicles: CachedVehicles = {
 // Latest vehicle ids from api response
 const latestVehicleIds = new Set<VehicleId>(); 
 
-// Function to fetch vehicles 
-const fetchVehicles = async (): Promise<void> => {
-
-  try {
-
-    // Poll Föli API for vehicles data
-    // Docs: https://data.foli.fi/doc/index
+// Helper: Fetch and Parse Föli API data
+const fetchApiData = async (): Promise<ApiResponse | null> => {
     const res = await fetch("https://data.foli.fi/siri/vm");
-
-    // Handle response error
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json() as ApiResponse;
+}
 
-    // Parse json data from response
-    const data = (await res.json() as ApiResponse); 
-    console.log("New vehicles data fetched");
+// Helper: Update cache with new vehicle data
+const updateCache = (data: ApiResponse): void => {
 
     // Add response status and servertime to cachedVehicles
     cachedVehicles.status = data.status ?? undefined; 
@@ -75,6 +73,9 @@ const fetchVehicles = async (): Promise<void> => {
     // Handle each vehicle 
     Object.entries(data.result.vehicles).forEach(([id, vehicle]) => {
 
+        // Abort if vehicle does not have coordinates
+        if (vehicle.longitude == null || vehicle.latitude == null) return; 
+
         // Add vehicle id to the latest vehicles set
         latestVehicleIds.add(id);
 
@@ -83,11 +84,11 @@ const fetchVehicles = async (): Promise<void> => {
             cachedVehicles.lineRefs[vehicle.lineref] = {};
         }
 
-        // Abort if vehicle does not have coordinates
-        if (vehicle.longitude == null || vehicle.latitude == null) return; 
+        // Reference to cached vehicle
+        const cachedVeh = cachedVehicles.lineRefs[vehicle.lineref][id];
 
         // Add new vehicle object to cachedVehicles 
-        if (!(id in cachedVehicles.lineRefs[vehicle.lineref])) {
+        if (!cachedVeh) {
             cachedVehicles.lineRefs[vehicle.lineref][id] = {
                 latitude: vehicle.latitude, 
                 longitude: vehicle.longitude, 
@@ -96,15 +97,12 @@ const fetchVehicles = async (): Promise<void> => {
             return; 
         }
 
-        // Reference to cached vehicle
-        const cachedVeh = cachedVehicles.lineRefs[vehicle.lineref][id];
-        
         // Abort if vehicle has stayed still and set hasMoved property to false
         if (cachedVeh.latitude === vehicle.latitude && cachedVeh.longitude === vehicle.longitude) {
             cachedVeh.hasMoved = false; 
             return; 
-        }
-    
+        } 
+
         // Update vehicle details on cachedVehicles
         cachedVeh.oldLat = cachedVeh.latitude; 
         cachedVeh.oldLon = cachedVeh.longitude;
@@ -132,11 +130,13 @@ const fetchVehicles = async (): Promise<void> => {
         // Calculate speed in km/h that the vehicle has travelled
         cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
-        // Re-assign vehicle in cachedVehicles
-        cachedVehicles.lineRefs[vehicle.lineref][id] = cachedVeh; 
-
     });
 
+}
+
+// Helper: Clean up removed vehicles
+const cleanupCache = (): void => {
+    
     // Remove vehicles from cache that are not in the latest api response
     Object.entries(cachedVehicles.lineRefs).forEach(([lineRef, vehicleIds]) => {
         Object.keys(vehicleIds).forEach(vehicleId => {
@@ -152,10 +152,36 @@ const fetchVehicles = async (): Promise<void> => {
           delete cachedVehicles.lineRefs[lineRef];
        }
     });
-    
-    // Broadcast vehicles to websocket connections
+
+}
+
+// Main function to fetch vehicles 
+const fetchVehicles = async (): Promise<void> => {
+
+  try {
+
+    // Fetch vehicles data
+    const data = await fetchApiData(); 
+    if (!data) return; 
+    console.log("New vehicles data fetched");
+
+    // Update cached vehicles
+    updateCache(data);
+
+    // Clean up removed vehicles
+    cleanupCache();
+
+    // Build websocket payload
+    const jsonString = JSON.stringify(cachedVehicles);
+    const compressedPayload = gzip(new TextEncoder().encode(jsonString));
+
+    // Debug payload size
+    const compressedSizeInKb = compressedPayload.length / 1024;
+    console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
+
+    // Broadcast moved vehicles to clients
     connectedSockets.forEach((socket) => {
-        socket.send(JSON.stringify(cachedVehicles));
+        socket.send(JSON.stringify(compressedPayload));
     });
 
   } catch (err) {

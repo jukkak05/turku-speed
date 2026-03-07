@@ -1,7 +1,7 @@
 {
   "tasks": {
     "dev": "deno run --watch --allow-net --allow-read --allow-env --env-file main.ts",
-    "lock": "deno install --lockfile-only",
+    "lock": "deno install --entrypoint main.ts --lockfile-only",
     "check": "deno lint && deno check main.ts",
     "bundle": "deno bundle --platform browser -o public/app.js src/client/app.ts"
   },
@@ -9,7 +9,8 @@
     "@std/http": "jsr:@std/http@^1.0.23",
     "geolib": "npm:geolib@3.3.4",
     "leaflet": "npm:leaflet@1.9.4",
-    "@types/leaflet": "npm:@types/leaflet@1.9.12"
+    "@types/leaflet": "npm:@types/leaflet@1.9.12",
+    "compress": "https://deno.land/x/compress@v0.4.5/mod.ts"
   },
   "compilerOptions": {
     "types": ["npm:@types/leaflet"],
