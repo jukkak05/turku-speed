@@ -155,6 +155,34 @@ const cleanupCache = (): void => {
 
 }
 
+// Helper: Build websocket payload
+export const buildWebsocketPayload = (): ArrayBuffer => {
+
+    // Gzip compress json string of cached vehicles
+    const jsonString = JSON.stringify(cachedVehicles);
+    const compressedPayload = gzip(new TextEncoder().encode(jsonString));
+
+    // Debug payload size
+    const compressedSizeInKb = compressedPayload.length / 1024;
+    console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
+
+    return compressedPayload.buffer as ArrayBuffer;
+
+}
+
+// Helper: Broadcast vehicles via websocket
+const broadcastVehicles = (): void => {
+
+    // Get payload
+    const payload = buildWebsocketPayload(); 
+
+    // Send moved vehicles data to websocket clients
+    connectedSockets.forEach((socket) => {
+        socket.send(payload);
+    });
+
+}
+
 // Main function to fetch vehicles 
 const fetchVehicles = async (): Promise<void> => {
 
@@ -171,19 +199,9 @@ const fetchVehicles = async (): Promise<void> => {
     // Clean up removed vehicles
     cleanupCache();
 
-    // Build websocket payload
-    const jsonString = JSON.stringify(cachedVehicles);
-    const compressedPayload = gzip(new TextEncoder().encode(jsonString));
-
-    // Debug payload size
-    const compressedSizeInKb = compressedPayload.length / 1024;
-    console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
-
-    // Broadcast moved vehicles to clients
-    connectedSockets.forEach((socket) => {
-        socket.send(JSON.stringify(compressedPayload));
-    });
-
+    // Broadcast vehicles
+    broadcastVehicles(); 
+   
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);
   }

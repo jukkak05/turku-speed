@@ -23,21 +23,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Create websocket connection to the api server
     const websocket = new WebSocket('/api/vehicles');
+    websocket.binaryType = "arraybuffer";
 
     // Websocket on message event
-    websocket.onmessage = (e) => {
+    websocket.onmessage = async (e) => {
 
         try {
 
-            // Parse json data
-            const apiData = JSON.parse(e.data) as CachedVehicles;
-            
-            // If status is not ok, abort
-            if (apiData.status !== 'OK') return;
+            if (e.data instanceof ArrayBuffer) {
 
-            // Populate Leaflet Map with vehicle markers and line ref buttons
-            populateLeafletMap(apiData, map); 
+                // Create blob from arraybuffer
+                const compressedBlob = new Blob([e.data]);
 
+                // Decompress gzip data
+                const ds = new DecompressionStream('gzip');
+                const decompressedStream = compressedBlob.stream().pipeThrough(ds);
+
+                // Read the data content 
+                const response = new Response(decompressedStream);
+                const text = await response.text();
+
+                // Parse apidata as CachedVehicles
+                const apiData = JSON.parse(text) as CachedVehicles;
+
+                // // If status is not ok, abort
+                if (apiData.status !== 'OK') return;
+
+                // // Populate Leaflet Map with vehicle markers and line ref buttons
+                populateLeafletMap(apiData, map); 
+
+            } else {
+                console.error("Data received wasn't compressed in gzip");
+            }
+       
         } catch (err) {
             console.error("Failed to handle api data: ", err);
         }

@@ -1,6 +1,6 @@
 
 // Import getVehicles function and connectedSockets set
-import { getVehicles, connectedSockets } from "../services/foliService.ts";
+import { connectedSockets, buildWebsocketPayload } from "../services/foliService.ts";
 
 // Handle API requests
 const apiHandler = (req: Request): Response => {
@@ -24,7 +24,8 @@ const apiHandler = (req: Request): Response => {
     socket.onopen = () => {
         console.log("Websocket connection opened!");
         // Send initial vehicles data
-        socket.send(JSON.stringify(getVehicles()));
+        const payload = buildWebsocketPayload(); 
+        socket.send(payload);
         // Add socket to set of websockets
         connectedSockets.add(socket);
     }

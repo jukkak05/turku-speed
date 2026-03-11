@@ -1,15 +1,27 @@
 // src/client/app.ts
-const markersByVehicleId = /* @__PURE__ */ new Map();
-const groupsByLineref = /* @__PURE__ */ new Map();
-const activeLineRefs = /* @__PURE__ */ new Set();
+var markersByVehicleId = /* @__PURE__ */ new Map();
+var groupsByLineref = /* @__PURE__ */ new Map();
+var activeLineRefs = /* @__PURE__ */ new Set();
 document.addEventListener("DOMContentLoaded", () => {
   const map = initializeLeafletMap();
   const websocket = new WebSocket("/api/vehicles");
-  websocket.onmessage = (e) => {
+  websocket.binaryType = "arraybuffer";
+  websocket.onmessage = async (e) => {
     try {
-      const apiData = JSON.parse(e.data);
-      if (apiData.status !== "OK") return;
-      populateLeafletMap(apiData, map);
+      if (e.data instanceof ArrayBuffer) {
+        const compressedBlob = new Blob([
+          e.data
+        ]);
+        const ds = new DecompressionStream("gzip");
+        const decompressedStream = compressedBlob.stream().pipeThrough(ds);
+        const response = new Response(decompressedStream);
+        const text = await response.text();
+        const apiData = JSON.parse(text);
+        if (apiData.status !== "OK") return;
+        populateLeafletMap(apiData, map);
+      } else {
+        console.error("Data received wasn't compressed in gzip");
+      }
     } catch (err) {
       console.error("Failed to handle api data: ", err);
     }
