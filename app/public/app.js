@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = await response.text();
         const apiData = JSON.parse(text);
         if (apiData.status !== "OK") return;
+        console.log(apiData);
         populateLeafletMap(apiData, map);
       } else {
         console.error("Data received wasn't compressed in gzip");

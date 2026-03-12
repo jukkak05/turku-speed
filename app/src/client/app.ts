@@ -46,10 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Parse apidata as CachedVehicles
                 const apiData = JSON.parse(text) as CachedVehicles;
 
-                // // If status is not ok, abort
+                // If status is not ok, abort
                 if (apiData.status !== 'OK') return;
 
-                // // Populate Leaflet Map with vehicle markers and line ref buttons
+                // Populate Leaflet Map with vehicle markers and line ref buttons
                 populateLeafletMap(apiData, map); 
 
             } else {
