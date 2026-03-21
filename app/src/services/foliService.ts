@@ -4,6 +4,10 @@ import { calculateTravellingTime, calculateTravellingDistance, calculateTravelli
 // Import gzip 
 import { gzip } from "compress"
 
+// Import escaping from Deno standard html-library
+// https://docs.deno.com/runtime/reference/std/html/
+import { escape } from "jsr:@std/html/entities"
+
 // Export set for connected web sockets
 export const connectedSockets = new Set<WebSocket>(); 
 
@@ -55,7 +59,7 @@ const latestVehicleIds = new Set<VehicleId>();
 
 // Helper: Fetch and Parse Föli API data
 const fetchApiData = async (): Promise<ApiResponse | null> => {
-    const res = await fetch("https://data.foli.fi/siri/vm");
+    const res = await fetch("http://data.foli.fi/siri/vm");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as ApiResponse;
 }
@@ -79,9 +83,12 @@ const updateCache = (data: ApiResponse): void => {
         // Add vehicle id to the latest vehicles set
         latestVehicleIds.add(id);
 
+        // Escape lineref string
+        const safeLineref = escape(vehicle.lineref);
+
         // Add lineref object to cachedVehicles 
-        if (!(vehicle.lineref in cachedVehicles.lineRefs)) {
-            cachedVehicles.lineRefs[vehicle.lineref] = {};
+        if (!(safeLineref  in cachedVehicles.lineRefs)) {
+            cachedVehicles.lineRefs[safeLineref] = {};
         }
 
         // Reference to cached vehicle
@@ -89,10 +96,13 @@ const updateCache = (data: ApiResponse): void => {
 
         // Add new vehicle object to cachedVehicles 
         if (!cachedVeh) {
+            const lat = typeof vehicle.latitude === 'number' ? vehicle.latitude : 0; 
+            const lon = typeof vehicle.longitude === 'number' ? vehicle.longitude : 0;
+            const timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0; 
             cachedVehicles.lineRefs[vehicle.lineref][id] = {
-                latitude: vehicle.latitude, 
-                longitude: vehicle.longitude, 
-                timestamp: vehicle.recordedattime
+                latitude: lat, 
+                longitude: lon, 
+                timestamp: timestamp
             }
             return; 
         }
@@ -106,10 +116,10 @@ const updateCache = (data: ApiResponse): void => {
         // Update vehicle details on cachedVehicles
         cachedVeh.oldLat = cachedVeh.latitude; 
         cachedVeh.oldLon = cachedVeh.longitude;
-        cachedVeh.latitude = vehicle.latitude; 
-        cachedVeh.longitude = vehicle.longitude; 
+        cachedVeh.latitude = typeof vehicle.latitude === 'number' ? vehicle.latitude : 0; 
+        cachedVeh.longitude = typeof vehicle.longitude === 'number' ? vehicle.longitude : 0; 
         cachedVeh.oldtimestamp = cachedVeh.timestamp;
-        cachedVeh.timestamp = vehicle.recordedattime;
+        cachedVeh.timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0; 
         cachedVeh.hasMoved = true; 
 
         // Calculate time in seconds that the vehicle has travelled
@@ -211,8 +221,8 @@ const fetchVehicles = async (): Promise<void> => {
 export function startPolling() {
     // Fetch vehicles on startup
     fetchVehicles(); 
-    // Then fetch vehicles once every 5 seconds
-    setInterval(fetchVehicles, 5000);
+    // Then fetch vehicles once every 3 seconds
+    setInterval(fetchVehicles, 3000);
 }
 
 export function getVehicles() {

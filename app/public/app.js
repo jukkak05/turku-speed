@@ -18,7 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const text = await response.text();
         const apiData = JSON.parse(text);
         if (apiData.status !== "OK") return;
-        console.log(apiData);
         populateLeafletMap(apiData, map);
       } else {
         console.error("Data received wasn't compressed in gzip");
@@ -66,9 +65,9 @@ function populateLeafletMap(apiData, map) {
           vehicle.latitude,
           vehicle.longitude
         ]);
-        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h`);
       } else {
-        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h`);
       }
       markersByVehicleId.set(id, marker);
     });

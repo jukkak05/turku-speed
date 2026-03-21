@@ -1,3 +1,5 @@
+// Import http from Deno standard library
+// https://docs.deno.com/runtime/reference/std/http/
 import { serveFile } from "@std/http";
 
 const staticHandler = async (req: Request, url: URL): Promise<Response> => {

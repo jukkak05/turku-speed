@@ -6,6 +6,7 @@
     "bundle": "deno bundle --platform browser -o public/app.js src/client/app.ts"
   },
   "imports": {
+    "@std/html": "jsr:@std/html@^1.0.5",
     "@std/http": "jsr:@std/http@^1.0.23",
     "geolib": "npm:geolib@3.3.4",
     "leaflet": "npm:leaflet@1.9.4",

@@ -5,6 +5,7 @@
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fmt@^1.0.8": "1.0.8",
     "jsr:@std/fs@^1.0.21": "1.0.21",
+    "jsr:@std/html@*": "1.0.5",
     "jsr:@std/html@^1.0.5": "1.0.5",
     "jsr:@std/http@^1.0.23": "1.0.23",
     "jsr:@std/internal@^1.0.12": "1.0.12",
@@ -40,7 +41,7 @@
         "jsr:@std/encoding",
         "jsr:@std/fmt",
         "jsr:@std/fs",
-        "jsr:@std/html",
+        "jsr:@std/html@^1.0.5",
         "jsr:@std/media-types",
         "jsr:@std/net",
         "jsr:@std/path",
@@ -187,6 +188,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@std/html@^1.0.5",
       "jsr:@std/http@^1.0.23",
       "npm:@types/leaflet@*",
       "npm:@types/leaflet@1.9.12",

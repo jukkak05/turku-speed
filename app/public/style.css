@@ -22,7 +22,7 @@ body {
         font-family: "Special Elite", system-ui;
         font-weight: 400;
         font-style: normal;
-        width: 80vw;
+        width: 81vw;
         svg {
             position: absolute;
             top: 23px;
@@ -62,9 +62,8 @@ body {
             }
         }
         #map {
-            width: 80vw;
+            width: 81vw;
             height: 80vh;
-            box-shadow: 10px 10px 10px #000; 
         }
         a {
             font-weight: 600; 

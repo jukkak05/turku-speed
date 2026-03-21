@@ -114,9 +114,9 @@ function populateLeafletMap(apiData: CachedVehicles, map: L.Map) {
             // Update vehicle position and popup if it has moved
             if (vehicle.hasMoved === true) {
                 marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h `);
+                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h`);
             } else {
-                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h `);
+                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h`);
             }
 
             // Update leaflet marker in markersByVehicleId
