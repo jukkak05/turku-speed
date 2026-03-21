@@ -123,7 +123,7 @@ const updateCache = (data: ApiResponse): void => {
         cachedVeh.hasMoved = true; 
 
         // Calculate time in seconds that the vehicle has travelled
-        cachedVeh.travelledTime = calculateTravellingTime(vehicle.recordedattime, cachedVeh.oldtimestamp);
+        cachedVeh.travelledTime = calculateTravellingTime(cachedVeh.timestamp, cachedVeh.oldtimestamp);
 
         // Calculate distance in meters that the vehicle has travelled
         cachedVeh.travelledDistance = calculateTravellingDistance(
@@ -132,13 +132,15 @@ const updateCache = (data: ApiResponse): void => {
                 longitude: cachedVeh.oldLon
             },
             {
-                latitude: vehicle.latitude, 
-                longitude: vehicle.longitude
+                latitude:  cachedVeh.latitude, 
+                longitude:  cachedVeh.longitude
             }
         );
         
         // Calculate speed in km/h that the vehicle has travelled
-        cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
+        cachedVeh.speed = typeof calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime) 
+        === 'number' ? calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime) 
+        : 0;
 
     });
 
