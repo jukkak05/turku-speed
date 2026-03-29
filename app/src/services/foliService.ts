@@ -203,7 +203,6 @@ const fetchVehicles = async (): Promise<void> => {
     // Fetch vehicles data
     const data = await fetchApiData(); 
     if (!data) return; 
-    console.log("New vehicles data fetched");
 
     // Update cached vehicles
     updateCache(data);
