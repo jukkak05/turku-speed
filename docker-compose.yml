@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     expose:
-      - "8000"
+      - "8000" 
     networks:
       - proxy-net
 

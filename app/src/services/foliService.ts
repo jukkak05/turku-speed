@@ -183,8 +183,8 @@ export const buildWebsocketPayload = (): ArrayBuffer => {
     const compressedPayload = gzip(new TextEncoder().encode(jsonString));
 
     // Debug payload size
-    //const compressedSizeInKb = compressedPayload.length / 1024;
-    //console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
+    // const compressedSizeInKb = compressedPayload.length / 1024;
+    // console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
 
     return compressedPayload.buffer as ArrayBuffer;
 
