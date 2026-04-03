@@ -16,7 +16,7 @@
       crossorigin=""
     ></script>
     <link rel="stylesheet" href="style.css">
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
   </head>
   <body>
     <main>
@@ -29,6 +29,9 @@
         <button id="all-linerefs" class="active">Kaikki</button>
       </div>
       <div id="map"></div>
+      <div id="api-error" class="hidden">
+        <img src="bussi-ojassa.png">
+      </div>
         <p>
           Sovellus päivittää Turun joukkoliikenteen bussien nopeuden ja sijainnin kartalla 3 sekunnin välein. Nopeus lasketaan sijaintikoordinaattien (leveys, pituus) ja aikaleimojen avulla. Koordinaattien välinen etäisyys saadaan geolib kirjaston avulla: <a href="https://www.npmjs.com/package/geolib" target="_blank">https://www.npmjs.com/package/geolib</a><br><br>
           Sijaintitiedot: Turun seudun joukkoliikenteen liikennöinti- ja aikatauludata. Aineiston ylläpitäjä on Turun kaupungin joukkoliikennetoimisto. Aineisto on ladattu palvelusta <a href="http://data.foli.fi/">data.foli.fi</a> lisenssillä Creative Commons Nimeä 4.0 Kansainvälinen (CC BY 4.0).<br><br>

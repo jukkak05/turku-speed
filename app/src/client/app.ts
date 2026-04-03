@@ -46,20 +46,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Parse apidata as CachedVehicles
                 const apiData = JSON.parse(text) as CachedVehicles;
 
-                // If status is not ok, abort
-                if (apiData.status !== 'OK') return;
+                // If status is not ok, hide map and show error
+                if (apiData.status !== 'OK') {
+                    showError(map);
+                    return; 
+                }
 
                 // Populate Leaflet Map with vehicle markers and line ref buttons
                 populateLeafletMap(apiData, map); 
 
             } else {
                 console.error("Data received wasn't compressed in gzip");
+                showError(map);
             }
        
         } catch (err) {
             console.error("Failed to handle api data: ", err);
+            showError(map);
         }
         
+    };
+
+    // Websocket on error and close events
+    websocket.onerror = () => showError(map);
+    websocket.onclose = () => {
+        showError(map);
+        setTimeout(() => location.reload(), 10000);
     };
 
     // Dark mode
@@ -195,4 +207,12 @@ function darkmode() {
         darkButton?.classList.remove('hidden');
         document.body.classList.remove('dark');
     });
+}
+
+function showError(map: L.Map): void {
+    document.getElementById('map')?.classList.add('hidden');
+    document.getElementById('lineref-buttons')?.classList.add('hidden');
+    document.querySelector('p')?.classList.add('hidden');
+    document.getElementById('api-error')?.classList.remove('hidden');
+    map.remove(); 
 }

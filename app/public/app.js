@@ -17,14 +17,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = new Response(decompressedStream);
         const text = await response.text();
         const apiData = JSON.parse(text);
-        if (apiData.status !== "OK") return;
+        if (apiData.status !== "OK") {
+          showError(map);
+          return;
+        }
         populateLeafletMap(apiData, map);
       } else {
         console.error("Data received wasn't compressed in gzip");
+        showError(map);
       }
     } catch (err) {
       console.error("Failed to handle api data: ", err);
+      showError(map);
     }
+  };
+  websocket.onerror = () => showError(map);
+  websocket.onclose = () => {
+    showError(map);
+    setTimeout(() => location.reload(), 1e4);
   };
   darkmode();
   allLineRefsButton(map);
@@ -125,4 +135,11 @@ function darkmode() {
     darkButton?.classList.remove("hidden");
     document.body.classList.remove("dark");
   });
+}
+function showError(map) {
+  document.getElementById("map")?.classList.add("hidden");
+  document.getElementById("lineref-buttons")?.classList.add("hidden");
+  document.querySelector("p")?.classList.add("hidden");
+  document.getElementById("api-error")?.classList.remove("hidden");
+  map.remove();
 }

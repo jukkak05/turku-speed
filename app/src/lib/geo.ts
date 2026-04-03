@@ -29,8 +29,8 @@ function _buildBbox(lat: number, lon: number, delta = 0.00005) {
 }
 
 // Function to calculate travelled time in seconds
-function calculateTravellingTime(oldTime: number, newTime: number): number {
-    return oldTime - newTime; 
+function calculateTravellingTime(oldTimestamp: number, timestamp: number): number {
+    return oldTimestamp - timestamp; 
 }
 
 // Function to calculate travelled distance in meters

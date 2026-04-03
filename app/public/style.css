@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 .hidden {
-    display: none; 
+    display: none !important; 
 }
 body {
     background: #f0b323;

@@ -6,7 +6,7 @@ import { gzip } from "compress"
 
 // Import escaping from Deno standard html-library
 // https://docs.deno.com/runtime/reference/std/html/
-import { escape } from "jsr:@std/html/entities"
+import { escape } from "@std/html/entities"
 
 // Export set for connected web sockets
 export const connectedSockets = new Set<WebSocket>(); 
@@ -55,7 +55,11 @@ const cachedVehicles: CachedVehicles = {
 }
 
 // Latest vehicle ids from api response
-const latestVehicleIds = new Set<VehicleId>(); 
+const latestVehicleIds = new Set<VehicleId>();
+
+// Stale counter for api coordinates
+let staleCount = 0; 
+const STALE_THRESHOLD = 6; 
 
 // Helper: Fetch and Parse Föli API data
 const fetchApiData = async (): Promise<ApiResponse | null> => {
@@ -87,19 +91,19 @@ const updateCache = (data: ApiResponse): void => {
         const safeLineref = escape(vehicle.lineref);
 
         // Add lineref object to cachedVehicles 
-        if (!(safeLineref  in cachedVehicles.lineRefs)) {
+        if (!(safeLineref in cachedVehicles.lineRefs)) {
             cachedVehicles.lineRefs[safeLineref] = {};
         }
 
         // Reference to cached vehicle
-        const cachedVeh = cachedVehicles.lineRefs[vehicle.lineref][id];
+        const cachedVeh = cachedVehicles.lineRefs[safeLineref][id];
 
         // Add new vehicle object to cachedVehicles 
         if (!cachedVeh) {
             const lat = typeof vehicle.latitude === 'number' ? vehicle.latitude : 0; 
             const lon = typeof vehicle.longitude === 'number' ? vehicle.longitude : 0;
             const timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0; 
-            cachedVehicles.lineRefs[vehicle.lineref][id] = {
+            cachedVehicles.lineRefs[safeLineref][id] = {
                 latitude: lat, 
                 longitude: lon, 
                 timestamp: timestamp
@@ -138,9 +142,7 @@ const updateCache = (data: ApiResponse): void => {
         );
         
         // Calculate speed in km/h that the vehicle has travelled
-        cachedVeh.speed = typeof calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime) 
-        === 'number' ? calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime) 
-        : 0;
+        cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
 
     });
 
@@ -175,8 +177,8 @@ export const buildWebsocketPayload = (): ArrayBuffer => {
     const compressedPayload = gzip(new TextEncoder().encode(jsonString));
 
     // Debug payload size
-    const compressedSizeInKb = compressedPayload.length / 1024;
-    console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
+    //const compressedSizeInKb = compressedPayload.length / 1024;
+    //console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
 
     return compressedPayload.buffer as ArrayBuffer;
 
@@ -207,6 +209,21 @@ const fetchVehicles = async (): Promise<void> => {
     // Update cached vehicles
     updateCache(data);
 
+    // Handle stale data (all buses still)
+    const movedCount = Object.values(cachedVehicles.lineRefs)
+    .flatMap(v => Object.values(v))
+    .filter(v => v.hasMoved).length;
+
+    if (movedCount === 0) {
+        staleCount++;
+    } else {
+        staleCount = 0; 
+    }
+
+    if (staleCount >= STALE_THRESHOLD) {
+        throw new Error('Stale coordinates');
+    }
+
     // Clean up removed vehicles
     cleanupCache();
 
@@ -215,6 +232,8 @@ const fetchVehicles = async (): Promise<void> => {
    
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);
+    cachedVehicles.status = "API ERROR";
+    broadcastVehicles(); 
   }
 
 } 
@@ -229,4 +248,3 @@ export function startPolling() {
 export function getVehicles() {
     return cachedVehicles;
 }
-

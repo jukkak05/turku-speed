@@ -12,7 +12,13 @@ const requestHandler = async (req: Request): Promise<Response> => {
     return apiHandler(req);
   } else {
     // Handle static files requests
-    return await staticHandler(req, url);
+    const response = await staticHandler(req);
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+    response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+    // response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');  
+    return response; 
   }
 };
 
