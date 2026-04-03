@@ -18,7 +18,7 @@ Speed is calculated from GPS coordinate changes between polls using the [geolib]
 4. deno task bundle
 5. deno task dev
 
-# API Data Attribution
+## API Data Attribution
 
 Lähde: Turun seudun joukkoliikenteen liikennöinti- ja aikatauludata. 
 Aineiston ylläpitäjä on Turun kaupungin joukkoliikennetoimisto. 
