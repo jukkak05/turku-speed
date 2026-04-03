@@ -1,0 +1,13 @@
+services:
+  turku-speed:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "8000"
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+    name: proxy-net

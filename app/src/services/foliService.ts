@@ -63,7 +63,13 @@ const STALE_THRESHOLD = 6;
 
 // Helper: Fetch and Parse Föli API data
 const fetchApiData = async (): Promise<ApiResponse | null> => {
-    const res = await fetch("http://data.foli.fi/siri/vm");
+    const res = await fetch(
+        "http://data.foli.fi/siri/vm", { 
+            headers: { 
+                "User-Agent": "TurkuSpeed/1.0 (+https://turkuspeed.denoapp.dev; server-side fetch"
+            }
+        }
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json() as ApiResponse;
 }
