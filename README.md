@@ -14,9 +14,7 @@ Speed is calculated from GPS coordinate changes between polls using the [geolib]
 
 1. Install Deno: https://docs.deno.com/runtime/getting_started/installation/
 2. Copy env.example to .env and fill in, if not using defaults
-3. cd app
-4. deno task bundle
-5. deno task dev
+3. cd app && deno task bundle && deno task dev
 
 ## API Data Attribution
 
