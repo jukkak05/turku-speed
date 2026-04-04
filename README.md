@@ -1,7 +1,7 @@
 # TurkuSpeed
 
 Real-time speed and location tracker for Turku public transport buses.
-Vehicle positions are fetched from the [Föli API](http://data.foli.fi/) every 3 seconds. 
+Vehicle positions are fetched from the [Föli API](http://data.foli.fi/) every 4 seconds. 
 Speed is calculated from GPS coordinate changes between polls using the [geolib](https://www.npmjs.com/package/geolib) library.
 
 ## Stack

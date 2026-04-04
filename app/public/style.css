@@ -22,7 +22,8 @@ body {
         font-family: "Special Elite", system-ui;
         font-weight: 400;
         font-style: normal;
-        width: 81vw;
+        width: calc(100% - 30px);
+        max-width: 1330px;
         svg {
             position: absolute;
             top: 23px;
@@ -62,8 +63,14 @@ body {
             }
         }
         #map {
-            width: 81vw;
-            height: 80vh;
+            width: 100%;
+            height: 600px;
+            @media (max-width: 800px) {
+                height: 400px; 
+            }
+            @media (max-width: 600px) {
+                height: 300px; 
+            }
         }
         a {
             font-weight: 600; 
@@ -71,4 +78,5 @@ body {
         }
     }
 }
+
 

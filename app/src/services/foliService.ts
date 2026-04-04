@@ -247,8 +247,8 @@ const fetchVehicles = async (): Promise<void> => {
 export function startPolling() {
     // Fetch vehicles on startup
     fetchVehicles(); 
-    // Then fetch vehicles once every 3 seconds
-    setInterval(fetchVehicles, 3000);
+    // Then fetch vehicles once every 4 seconds
+    setInterval(fetchVehicles, 4000);
 }
 
 export function getVehicles() {
