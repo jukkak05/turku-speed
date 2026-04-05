@@ -1,0 +1,6 @@
+services:
+  turku-speed:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"

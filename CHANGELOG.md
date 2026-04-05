@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.2] - 5.4.2026
+
+### Changed
+- Lazy load bus image
+
+### Added
+- docker-compose.local.yml
+- Update readme 
+
 ## [1.0.1] - 4.4.2026
 
 ### Fixed
