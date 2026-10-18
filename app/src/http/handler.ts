@@ -17,11 +17,13 @@ const requestHandler = async (req: Request): Promise<Response> => {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
     response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-    // Allow Leaflet from unpkg and map tiles from OpenStreetMap, styles need 'unsafe-inline' for Leaflet's inline svg styles
+    // Allow Leaflet from unpkg, map tiles from OpenStreetMap and Special Elite font from Google Fonts,
+    // styles need 'unsafe-inline' for Leaflet's inline svg styles
     response.headers.set('Content-Security-Policy', [
       "default-src 'self'",
       "script-src 'self' https://unpkg.com",
-      "style-src 'self' https://unpkg.com 'unsafe-inline'",
+      "style-src 'self' https://unpkg.com https://fonts.googleapis.com 'unsafe-inline'",
+      "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: https://unpkg.com https://tile.openstreetmap.org",
       "connect-src 'self'",
       "object-src 'none'",
