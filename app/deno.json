@@ -3,10 +3,15 @@
     "dev": "deno run --watch --allow-net --allow-read --allow-env --env-file main.ts",
     "lock": "deno install --entrypoint main.ts --lockfile-only",
     "check": "deno lint && deno check main.ts",
+    "test": "deno test --allow-net --allow-read --allow-env",
     "bundle": "deno bundle --platform browser -o public/app.js src/client/app.ts"
   },
   "minimumDependencyAge": "P7D",
+  "lint": {
+    "exclude": ["public/app.js"]
+  },
   "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.19",
     "@std/html": "jsr:@std/html@^1.0.7",
     "@std/http": "jsr:@std/http@^1.1.4",
     "geolib": "npm:geolib@4.0.0",

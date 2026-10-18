@@ -29,6 +29,12 @@ Requires [Docker](https://docs.docker.com/get-docker/) with Compose plugin.
 docker compose -f docker-compose.local.yml up --build
 ```
 
+## Tests
+
+```bash
+cd app && deno task check && deno task test
+```
+
 ## Running production
 
 The app needs an external Docker network named proxy-net and use of reverse proxy in front. 
