@@ -1,7 +1,8 @@
-FROM denoland/deno:latest
+FROM denoland/deno:2.9.7
 
 WORKDIR /app
-COPY ./app .
+COPY --chown=deno:deno ./app .
+USER deno
 RUN deno install --frozen
 
 EXPOSE 8000

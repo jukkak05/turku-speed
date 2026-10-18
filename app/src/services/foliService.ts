@@ -1,9 +1,6 @@
 // Import geo functions
 import { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed } from "../lib/geo.ts";
 
-// Import gzip 
-import { gzip } from "compress"
-
 // Import escaping from Deno standard html-library
 // https://docs.deno.com/runtime/reference/std/html/
 import { escape } from "@std/html/entities"
@@ -175,26 +172,37 @@ const cleanupCache = (): void => {
 
 }
 
-// Helper: Build websocket payload
-export const buildWebsocketPayload = (): ArrayBuffer => {
+// Latest gzip compressed websocket payload
+let latestPayload: ArrayBuffer | null = null;
 
-    // Gzip compress json string of cached vehicles
+// Helper: Build websocket payload
+const buildWebsocketPayload = async (): Promise<ArrayBuffer> => {
+
+    // Gzip compress json string of cached vehicles with native CompressionStream
+    // https://docs.deno.com/api/web/~/CompressionStream
     const jsonString = JSON.stringify(cachedVehicles);
-    const compressedPayload = gzip(new TextEncoder().encode(jsonString));
+    const compressedStream = new Blob([jsonString]).stream().pipeThrough(new CompressionStream('gzip'));
+    const compressedPayload = await new Response(compressedStream).arrayBuffer();
 
     // Debug payload size
-    // const compressedSizeInKb = compressedPayload.length / 1024;
+    // const compressedSizeInKb = compressedPayload.byteLength / 1024;
     // console.log(`Compressed size: ${compressedSizeInKb.toFixed(2)} KB`);
 
-    return compressedPayload.buffer as ArrayBuffer;
+    return compressedPayload;
 
 }
 
-// Helper: Broadcast vehicles via websocket
-const broadcastVehicles = (): void => {
+// Helper: Get latest websocket payload for newly connected sockets
+export const getWebsocketPayload = (): ArrayBuffer | null => {
+    return latestPayload;
+}
 
-    // Get payload
-    const payload = buildWebsocketPayload(); 
+// Helper: Broadcast vehicles via websocket
+const broadcastVehicles = async (): Promise<void> => {
+
+    // Build and save payload
+    const payload = await buildWebsocketPayload();
+    latestPayload = payload;
 
     // Send moved vehicles data to websocket clients
     connectedSockets.forEach((socket) => {
@@ -234,12 +242,12 @@ const fetchVehicles = async (): Promise<void> => {
     cleanupCache();
 
     // Broadcast vehicles
-    broadcastVehicles(); 
-   
+    await broadcastVehicles();
+
   } catch (err) {
     console.error("Failed to fetch vehicles: ", err);
     cachedVehicles.status = "API ERROR";
-    broadcastVehicles(); 
+    await broadcastVehicles();
   }
 
 } 
