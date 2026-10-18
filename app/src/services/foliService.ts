@@ -212,7 +212,7 @@ const broadcastVehicles = async (): Promise<void> => {
 }
 
 // Main function to fetch vehicles 
-const fetchVehicles = async (): Promise<void> => {
+export const fetchVehicles = async (): Promise<void> => {
 
   try {
 
@@ -261,4 +261,14 @@ export function startPolling() {
 
 export function getVehicles() {
     return cachedVehicles;
+}
+
+// Reset cache and polling state (used by tests)
+export function resetCache() {
+    cachedVehicles.status = undefined;
+    cachedVehicles.servertime = null;
+    cachedVehicles.lineRefs = {};
+    latestVehicleIds.clear();
+    staleCount = 0;
+    latestPayload = null;
 }
