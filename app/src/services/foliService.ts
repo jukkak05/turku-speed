@@ -1,5 +1,5 @@
 // Import geo functions
-import { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed } from "../lib/geo.ts";
+import { calculateAverageSpeed, type PositionSample } from "../lib/geo.ts";
 
 // Import escaping from Deno standard html-library
 // https://docs.deno.com/runtime/reference/std/html/
@@ -35,11 +35,6 @@ type CachedVehicle = {
     latitude: number;
     longitude: number; 
     timestamp: number;
-    oldtimestamp?: number; 
-    oldLat?: number; 
-    oldLon?: number;
-    travelledTime?: number; 
-    travelledDistance?: number; 
     speed?: number; 
     hasMoved?: boolean;  
 }
@@ -53,6 +48,17 @@ const cachedVehicles: CachedVehicles = {
 
 // Latest vehicle ids from api response
 const latestVehicleIds = new Set<VehicleId>();
+
+// Recent position samples by vehicle id for speed calculation (not sent to clients)
+const positionHistory = new Map<VehicleId, PositionSample[]>();
+
+// Speed is averaged over this many seconds, because single Föli updates have
+// uneven, whole second timestamps that make one-segment speeds jump around
+const SPEED_WINDOW_S = 12;
+// Minimum seconds of history before speed is shown
+const MIN_SPEED_SPAN_S = 6;
+// Gap in seconds after which old history is discarded (vehicle was offline)
+const MAX_SAMPLE_GAP_S = 30;
 
 // Stale counter for api coordinates
 let staleCount = 0; 
@@ -101,51 +107,61 @@ const updateCache = (data: ApiResponse): void => {
         // Reference to cached vehicle
         const cachedVeh = cachedVehicles.lineRefs[safeLineref][id];
 
-        // Add new vehicle object to cachedVehicles 
+        const lat = vehicle.latitude;
+        const lon = vehicle.longitude;
+        const timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0;
+        const sample: PositionSample = { latitude: lat, longitude: lon, timestamp };
+
+        // Add new vehicle object to cachedVehicles and start its position history
         if (!cachedVeh) {
-            const lat = typeof vehicle.latitude === 'number' ? vehicle.latitude : 0; 
-            const lon = typeof vehicle.longitude === 'number' ? vehicle.longitude : 0;
-            const timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0; 
             cachedVehicles.lineRefs[safeLineref][id] = {
                 latitude: lat, 
                 longitude: lon, 
                 timestamp: timestamp
             }
+            positionHistory.set(id, [sample]);
             return; 
         }
 
-        // Abort if vehicle has stayed still and set hasMoved property to false
-        if (cachedVeh.latitude === vehicle.latitude && cachedVeh.longitude === vehicle.longitude) {
-            cachedVeh.hasMoved = false; 
-            return; 
-        } 
+        // Abort if there is no new report from the vehicle, keep last speed
+        if (timestamp <= cachedVeh.timestamp) {
+            cachedVeh.hasMoved = false;
+            return;
+        }
 
         // Update vehicle details on cachedVehicles
-        cachedVeh.oldLat = cachedVeh.latitude; 
-        cachedVeh.oldLon = cachedVeh.longitude;
-        cachedVeh.latitude = typeof vehicle.latitude === 'number' ? vehicle.latitude : 0; 
-        cachedVeh.longitude = typeof vehicle.longitude === 'number' ? vehicle.longitude : 0; 
-        cachedVeh.oldtimestamp = cachedVeh.timestamp;
-        cachedVeh.timestamp = typeof vehicle.recordedattime === 'number' ? vehicle.recordedattime : 0; 
-        cachedVeh.hasMoved = true; 
+        cachedVeh.hasMoved = cachedVeh.latitude !== lat || cachedVeh.longitude !== lon;
+        cachedVeh.latitude = lat;
+        cachedVeh.longitude = lon;
+        const previousTimestamp = cachedVeh.timestamp;
+        cachedVeh.timestamp = timestamp;
 
-        // Calculate time in seconds that the vehicle has travelled
-        cachedVeh.travelledTime = calculateTravellingTime(cachedVeh.timestamp, cachedVeh.oldtimestamp);
+        // Vehicle reported standing still: show 0 right away and restart history from here,
+        // so the speed after leaving a stop is not dragged down by the time spent standing
+        if (!cachedVeh.hasMoved) {
+            cachedVeh.speed = 0;
+            positionHistory.set(id, [sample]);
+            return;
+        }
 
-        // Calculate distance in meters that the vehicle has travelled
-        cachedVeh.travelledDistance = calculateTravellingDistance(
-            { 
-                latitude: cachedVeh.oldLat, 
-                longitude: cachedVeh.oldLon
-            },
-            {
-                latitude:  cachedVeh.latitude, 
-                longitude:  cachedVeh.longitude
-            }
-        );
-        
-        // Calculate speed in km/h that the vehicle has travelled
-        cachedVeh.speed = calculateTravellingSpeed(cachedVeh.travelledDistance, cachedVeh.travelledTime);
+        // Discard history after a long gap, then add the new sample
+        let history = positionHistory.get(id) ?? [];
+        if (timestamp - previousTimestamp > MAX_SAMPLE_GAP_S) {
+            history = [];
+            cachedVeh.speed = undefined;
+        }
+        history.push(sample);
+
+        // Drop old samples, but keep one at or before the window start so the window is full
+        while (history.length > 2 && history[1].timestamp <= timestamp - SPEED_WINDOW_S) {
+            history.shift();
+        }
+        positionHistory.set(id, history);
+
+        // Calculate average speed in km/h once there is enough history
+        if (timestamp - history[0].timestamp >= MIN_SPEED_SPAN_S) {
+            cachedVeh.speed = calculateAverageSpeed(history);
+        }
 
     });
 
@@ -159,6 +175,7 @@ const cleanupCache = (): void => {
         Object.keys(vehicleIds).forEach(vehicleId => {
             if (!latestVehicleIds.has(vehicleId)) {
                 delete (cachedVehicles.lineRefs[lineRef][vehicleId]);
+                positionHistory.delete(vehicleId);
             }
         });
     });
@@ -212,7 +229,7 @@ const broadcastVehicles = async (): Promise<void> => {
 }
 
 // Main function to fetch vehicles 
-const fetchVehicles = async (): Promise<void> => {
+export const fetchVehicles = async (): Promise<void> => {
 
   try {
 
@@ -261,4 +278,15 @@ export function startPolling() {
 
 export function getVehicles() {
     return cachedVehicles;
+}
+
+// Reset cache and polling state (used by tests)
+export function resetCache() {
+    cachedVehicles.status = undefined;
+    cachedVehicles.servertime = null;
+    cachedVehicles.lineRefs = {};
+    latestVehicleIds.clear();
+    positionHistory.clear();
+    staleCount = 0;
+    latestPayload = null;
 }

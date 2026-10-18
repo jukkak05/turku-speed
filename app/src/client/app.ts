@@ -116,20 +116,21 @@ function populateLeafletMap(apiData: CachedVehicles, map: L.Map) {
             if (!marker) {
                 // Create leaflet marker based on vehicle latitude and longitude
                 marker = L.marker([vehicle.latitude, vehicle.longitude])
-                .bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+                .bindPopup(`Linja: ${lineref}<br>Nopeutta lasketaan...`);
                 markersByVehicleId.set(id, marker);
                 linerefGroup.addLayer(marker);
                 map.addLayer(linerefGroup);
                 return; 
             }
     
-            // Update vehicle position and popup if it has moved
+            // Update vehicle position if it has moved
             if (vehicle.hasMoved === true) {
                 marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h`);
-            } else {
-                marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h`);
             }
+
+            // Update popup with speed, which is 0 when the vehicle reported standing still
+            const speedText = vehicle.speed === undefined ? 'Nopeutta lasketaan...' : `Nopeus: ${vehicle.speed} km/h`;
+            marker.setPopupContent(`Linja: ${lineref}<br>${speedText}`);
 
             // Update leaflet marker in markersByVehicleId
             markersByVehicleId.set(id, marker);
