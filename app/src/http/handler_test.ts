@@ -32,6 +32,9 @@ Deno.test("serves index.html with security headers", async () => {
     assertStringIncludes(csp, "default-src 'self'");
     assertStringIncludes(csp, "frame-ancestors 'none'");
     assertStringIncludes(csp, "object-src 'none'");
+    // Google Fonts stylesheet and font files
+    assertStringIncludes(csp, "style-src 'self' https://unpkg.com https://fonts.googleapis.com");
+    assertStringIncludes(csp, "font-src 'self' https://fonts.gstatic.com");
   });
 });
 
