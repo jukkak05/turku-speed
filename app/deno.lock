@@ -6,14 +6,14 @@
     "jsr:@std/fmt@^1.0.10": "1.0.10",
     "jsr:@std/fs@^1.0.24": "1.0.24",
     "jsr:@std/html@^1.0.7": "1.0.7",
-    "jsr:@std/http@^1.0.23": "1.1.4",
+    "jsr:@std/http@^1.1.4": "1.1.4",
     "jsr:@std/internal@^1.0.14": "1.0.14",
     "jsr:@std/media-types@^1.1.0": "1.1.0",
     "jsr:@std/net@^1.0.7": "1.0.7",
     "jsr:@std/path@^1.1.6": "1.1.6",
     "jsr:@std/streams@^1.2.0": "1.2.0",
-    "npm:@types/leaflet@*": "1.9.12",
-    "npm:@types/leaflet@1.9.12": "1.9.12",
+    "npm:@types/leaflet@*": "1.9.22",
+    "npm:@types/leaflet@1.9.22": "1.9.22",
     "npm:geolib@4.0.0": "4.0.0",
     "npm:leaflet@1.9.4": "1.9.4"
   },
@@ -70,8 +70,8 @@
     "@types/geojson@7946.0.16": {
       "integrity": "sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg=="
     },
-    "@types/leaflet@1.9.12": {
-      "integrity": "sha512-BK7XS+NyRI291HIo0HCfE18Lp8oA30H1gpi1tf0mF3TgiCEzanQjOqNZ4x126SXzzi2oNSZhZ5axJp1k0iM6jg==",
+    "@types/leaflet@1.9.22": {
+      "integrity": "sha512-h3lhECYEKDasG7LFHu+GiHqAvsgLuQvlJvVZzJDGONo3sEL+wUOqSFLnwkZlK0qVxnxbuGFW8iBlJNYs5wgndA==",
       "dependencies": [
         "@types/geojson"
       ]
@@ -86,9 +86,9 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/html@^1.0.7",
-      "jsr:@std/http@^1.0.23",
+      "jsr:@std/http@^1.1.4",
       "npm:@types/leaflet@*",
-      "npm:@types/leaflet@1.9.12",
+      "npm:@types/leaflet@1.9.22",
       "npm:geolib@4.0.0",
       "npm:leaflet@1.9.4"
     ]

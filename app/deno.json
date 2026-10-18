@@ -8,10 +8,10 @@
   "minimumDependencyAge": "P7D",
   "imports": {
     "@std/html": "jsr:@std/html@^1.0.7",
-    "@std/http": "jsr:@std/http@^1.0.23",
+    "@std/http": "jsr:@std/http@^1.1.4",
     "geolib": "npm:geolib@4.0.0",
     "leaflet": "npm:leaflet@1.9.4",
-    "@types/leaflet": "npm:@types/leaflet@1.9.12"
+    "@types/leaflet": "npm:@types/leaflet@1.9.22"
   },
   "compilerOptions": {
     "types": ["npm:@types/leaflet"],
