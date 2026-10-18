@@ -1,0 +1,40 @@
+# Dependabot version updates
+# Docs: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+#
+# Cooldown: only propose releases that are at least 7 days old, to give the
+# registries time to catch and pull compromised versions (supply-chain attacks).
+# Note: Dependabot security updates do not cover Deno, see .github/workflows/deno-audit.yml
+version: 2
+updates:
+  # Deno dependencies (jsr: and npm: imports in app/deno.json)
+  - package-ecosystem: "deno"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      deno-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Deno base image in Dockerfile
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+
+  # Actions used in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      actions-minor-patch:
+        update-types: ["minor", "patch"]

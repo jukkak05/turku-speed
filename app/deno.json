@@ -5,13 +5,13 @@
     "check": "deno lint && deno check main.ts",
     "bundle": "deno bundle --platform browser -o public/app.js src/client/app.ts"
   },
+  "minimumDependencyAge": "P7D",
   "imports": {
-    "@std/html": "jsr:@std/html@^1.0.5",
+    "@std/html": "jsr:@std/html@^1.0.7",
     "@std/http": "jsr:@std/http@^1.0.23",
     "geolib": "npm:geolib@3.3.4",
     "leaflet": "npm:leaflet@1.9.4",
-    "@types/leaflet": "npm:@types/leaflet@1.9.12",
-    "compress": "https://deno.land/x/compress@v0.4.5/mod.ts"
+    "@types/leaflet": "npm:@types/leaflet@1.9.12"
   },
   "compilerOptions": {
     "types": ["npm:@types/leaflet"],

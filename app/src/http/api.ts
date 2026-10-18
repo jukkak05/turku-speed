@@ -1,6 +1,6 @@
 
 // Import getVehicles function and connectedSockets set
-import { connectedSockets, buildWebsocketPayload } from "../services/foliService.ts";
+import { connectedSockets, getWebsocketPayload } from "../services/foliService.ts";
 
 // Handle API requests
 const apiHandler = (req: Request): Response => {
@@ -13,7 +13,7 @@ const apiHandler = (req: Request): Response => {
     // Only allow websocket from localhost and app server
     const origin = req.headers.get('origin') ?? '';
     const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') ?? '').split(',');
-    if (!allowedOrigins.includes(origin)) {
+    if (origin === '' || !allowedOrigins.includes(origin)) {
         return new Response(null, { status: 404});
     }
 
@@ -23,14 +23,14 @@ const apiHandler = (req: Request): Response => {
     // Set up websocket event listeners
     socket.onopen = () => {
         console.log("Websocket connection opened!");
-        // Send initial vehicles data
-        const payload = buildWebsocketPayload(); 
-        socket.send(payload);
+        // Send initial vehicles data (if first poll has completed)
+        const payload = getWebsocketPayload();
+        if (payload) socket.send(payload);
         // Add socket to set of websockets
         connectedSockets.add(socket);
     }
-    socket.onmessage = (event: MessageEvent) => {
-        console.log("WebSocket message: ", event);
+    socket.onmessage = () => {
+        // Clients do not send data, ignore messages (no logging to avoid log flooding)
     }
     socket.onclose = () => {
         console.log('WebSocket closed');

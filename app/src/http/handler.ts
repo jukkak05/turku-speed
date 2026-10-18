@@ -17,6 +17,18 @@ const requestHandler = async (req: Request): Promise<Response> => {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
     response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+    // Allow Leaflet from unpkg and map tiles from OpenStreetMap, styles need 'unsafe-inline' for Leaflet's inline svg styles
+    response.headers.set('Content-Security-Policy', [
+      "default-src 'self'",
+      "script-src 'self' https://unpkg.com",
+      "style-src 'self' https://unpkg.com 'unsafe-inline'",
+      "img-src 'self' data: https://unpkg.com https://tile.openstreetmap.org",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join('; '));
     // response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');  
     return response; 
   }
