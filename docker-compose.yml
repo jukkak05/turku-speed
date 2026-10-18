@@ -1,9 +1,12 @@
 services:
   turku-speed:
-    build: .
+    image: ghcr.io/jukkak05/turku-speed:latest
     restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
     expose:
-      - "8000" 
+      - "8000"
     networks:
       - proxy-net
 
