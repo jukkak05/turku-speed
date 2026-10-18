@@ -5,5 +5,6 @@ COPY --chown=deno:deno ./app .
 USER deno
 RUN deno install --frozen
 
+# Environment variables come from docker compose env_file, .env is not in the image
 EXPOSE 8000
-CMD ["deno", "run", "--cached-only", "--allow-net", "--allow-read", "--allow-env", "--env-file", "main.ts"]
+CMD ["deno", "run", "--cached-only", "--allow-net", "--allow-read", "--allow-env", "main.ts"]

@@ -2,5 +2,7 @@ services:
   turku-speed:
     build: .
     restart: unless-stopped
+    # .env is not copied into the image, so pass the local dev file at runtime
+    env_file: app/.env
     ports:
       - "8000:8000"
