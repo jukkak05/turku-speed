@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertExists } from "@std/assert";
+import { assert, assertAlmostEquals, assertEquals, assertExists } from "@std/assert";
 import {
   type CachedVehicles,
   connectedSockets,
@@ -101,33 +101,118 @@ Deno.test("escapes HTML in lineref", async () => {
   assertEquals(Object.keys(getVehicles().lineRefs), ["&lt;b&gt;1&lt;/b&gt;"]);
 });
 
-Deno.test("calculates speed when vehicle has moved", async () => {
+// Latitude for a point the given meters north of LAT (1 degree of latitude is ~111.3 km)
+const north = (meters: number) => LAT + meters / 111319.5;
+
+// Poll one moving vehicle through [seconds since T0, meters north of LAT] points
+// and collect the speed reported after each poll
+const replay = async (points: [number, number][]) => {
+  const speeds: (number | undefined)[] = [];
+  for (const [t, meters] of points) {
+    await pollWith({ "1": bus("1", north(meters), LON, T0 + t) });
+    speeds.push(getVehicles().lineRefs["1"]["1"].speed);
+  }
+  return speeds;
+};
+
+// Turn [seconds, meters] segments into cumulative [seconds, meters] points starting from 0
+const fromSegments = (segments: [number, number][]) => {
+  const points: [number, number][] = [[0, 0]];
+  for (const [dt, dm] of segments) {
+    const [t, m] = points[points.length - 1];
+    points.push([t + dt, m + dm]);
+  }
+  return points;
+};
+
+Deno.test("calculates average speed once there is enough history", async () => {
   resetCache();
-  await pollWith({ "1": bus("1", LAT, LON, T0) });
-  // ~22 meters north in 4 seconds = ~20 km/h
-  await pollWith({ "1": bus("1", LAT + 0.0002, LON, T0 + 4) });
+  // ~50 km/h = ~13.9 m/s
+  const speeds = await replay([[0, 0], [4, 56], [8, 111], [12, 167]]);
+
+  // No speed until 6 seconds of history
+  assertEquals(speeds.slice(0, 2), [undefined, undefined]);
+  for (const speed of speeds.slice(2)) {
+    assertExists(speed);
+    assertAlmostEquals(speed, 50, 1);
+  }
 
   const vehicle = getVehicles().lineRefs["1"]["1"];
   assertEquals(vehicle.hasMoved, true);
-  assertEquals(vehicle.oldLat, LAT);
-  assertEquals(vehicle.oldLon, LON);
-  assertEquals(vehicle.latitude, LAT + 0.0002);
-  assertEquals(vehicle.oldtimestamp, T0);
-  assertEquals(vehicle.timestamp, T0 + 4);
-  assertEquals(vehicle.travelledTime, 4);
-  assertEquals(vehicle.travelledDistance, 22);
-  assertEquals(vehicle.speed, 20);
+  assertEquals(vehicle.latitude, north(167));
+  assertEquals(vehicle.timestamp, T0 + 12);
 });
 
-Deno.test("marks vehicle as not moved and keeps last speed when it stays still", async () => {
+Deno.test("smooths out jumps from uneven Föli timestamps (real data from bus 60093)", async () => {
   resetCache();
-  await pollWith({ "1": bus("1", LAT, LON, T0) });
-  await pollWith({ "1": bus("1", LAT + 0.0002, LON, T0 + 4) });
-  await pollWith({ "1": bus("1", LAT + 0.0002, LON, T0 + 8) });
+  // Segments [seconds, meters] recorded from the live feed with 4 s polling.
+  // Speed per segment would jump between 38 and 85 km/h.
+  const segments: [number, number][] = [
+    [4, 56], [6, 71], [2, 29], [6, 63], [5, 118], [2, 34], [5, 65],
+    [4, 66], [5, 97], [2, 33], [5, 65], [5, 98], [2, 32],
+  ];
+  const speeds = (await replay(fromSegments(segments))).filter((s) => s !== undefined);
+
+  for (const speed of speeds) {
+    assert(speed >= 40 && speed <= 66, `speed ${speed} out of range`);
+  }
+  for (let i = 1; i < speeds.length; i++) {
+    assert(Math.abs(speeds[i] - speeds[i - 1]) <= 16, `jump ${speeds[i - 1]} -> ${speeds[i]}`);
+  }
+});
+
+Deno.test("shows a steady speed when timestamps are rounded and uneven", async () => {
+  resetCache();
+  // Vehicle drives a steady 50 km/h, but reports arrive unevenly and timestamps are whole seconds
+  const mps = 50 / 3.6;
+  const trueTimes = [0, 4.9, 7.1, 12.8, 17.2, 19.9, 25.0, 29.6, 31.2, 36.9, 41.0, 43.1];
+  const speeds = await replay(trueTimes.map((t) => [Math.floor(t), t * mps]));
+
+  for (const speed of speeds.slice(3)) {
+    assertExists(speed);
+    assertAlmostEquals(speed, 50, 6);
+  }
+});
+
+Deno.test("shows 0 when vehicle reports standing still", async () => {
+  resetCache();
+  await replay([[0, 0], [4, 56], [8, 111]]);
+  await pollWith({ "1": bus("1", north(111), LON, T0 + 12) });
 
   const vehicle = getVehicles().lineRefs["1"]["1"];
   assertEquals(vehicle.hasMoved, false);
-  assertEquals(vehicle.speed, 20);
+  assertEquals(vehicle.speed, 0);
+});
+
+Deno.test("speed after leaving a stop is not dragged down by the time standing", async () => {
+  resetCache();
+  // Stand still for 12 seconds, then drive ~50 km/h
+  const speeds = await replay([[0, 0], [4, 0], [8, 0], [12, 0], [16, 56], [20, 111]]);
+  assertEquals(speeds.slice(1, 4), [0, 0, 0]);
+  // Only 4 seconds of history since the stop, keep showing 0
+  assertEquals(speeds[4], 0);
+  assertExists(speeds[5]);
+  assertAlmostEquals(speeds[5], 50, 1);
+});
+
+Deno.test("keeps last speed when there is no new report from the vehicle", async () => {
+  resetCache();
+  const speeds = await replay([[0, 0], [4, 56], [8, 111]]);
+  await pollWith({ "1": bus("1", north(111), LON, T0 + 8) });
+
+  const vehicle = getVehicles().lineRefs["1"]["1"];
+  assertEquals(vehicle.hasMoved, false);
+  assertEquals(vehicle.speed, speeds[2]);
+});
+
+Deno.test("discards history after a long gap in reports", async () => {
+  resetCache();
+  const speeds = await replay([[0, 0], [4, 56], [8, 111], [48, 500], [52, 556], [56, 611]]);
+  assertExists(speeds[2]);
+  // No speed until 6 seconds of new history
+  assertEquals(speeds.slice(3, 5), [undefined, undefined]);
+  assertExists(speeds[5]);
+  assertAlmostEquals(speeds[5], 50, 1);
 });
 
 Deno.test("removes vehicles and empty linerefs missing from latest response", async () => {

@@ -5,6 +5,9 @@ import { getDistance } from "geolib";
 // Define LatLon type
 type LatLon = { latitude: number; longitude: number};
 
+// Define position sample type (timestamp in seconds)
+type PositionSample = LatLon & { timestamp: number };
+
 // import rbush from "npm:rbush";
 // import bbox from "npm:@turf/bbox";
 
@@ -29,8 +32,8 @@ function _buildBbox(lat: number, lon: number, delta = 0.00005) {
 }
 
 // Function to calculate travelled time in seconds
-function calculateTravellingTime(oldTimestamp: number, timestamp: number): number {
-    return oldTimestamp - timestamp; 
+function calculateTravellingTime(timestamp: number, oldTimestamp: number): number {
+    return timestamp - oldTimestamp; 
 }
 
 // Function to calculate travelled distance in meters
@@ -44,4 +47,22 @@ function calculateTravellingSpeed(distance: number, time: number) {
     return Math.round((distance / time) * 3.6); 
 }
 
-export { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed };
+// Function to calculate average speed in km/h over a series of position samples
+function calculateAverageSpeed(samples: PositionSample[]): number | undefined {
+    if (samples.length < 2) return undefined;
+
+    // Elapsed time between the first and the last sample
+    const time = calculateTravellingTime(samples[samples.length - 1].timestamp, samples[0].timestamp);
+    if (time <= 0) return undefined;
+
+    // Sum of distances between consecutive samples
+    let distance = 0;
+    for (let i = 1; i < samples.length; i++) {
+        distance += calculateTravellingDistance(samples[i - 1], samples[i]);
+    }
+
+    return calculateTravellingSpeed(distance, time);
+}
+
+export type { PositionSample };
+export { calculateTravellingTime, calculateTravellingDistance, calculateTravellingSpeed, calculateAverageSpeed };

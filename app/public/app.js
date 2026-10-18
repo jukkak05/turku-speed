@@ -64,7 +64,7 @@ function populateLeafletMap(apiData, map) {
         marker = L.marker([
           vehicle.latitude,
           vehicle.longitude
-        ]).bindPopup(`Line: ${lineref}<br>Nopeutta lasketaan...`);
+        ]).bindPopup(`Linja: ${lineref}<br>Nopeutta lasketaan...`);
         markersByVehicleId.set(id, marker);
         linerefGroup.addLayer(marker);
         map.addLayer(linerefGroup);
@@ -75,10 +75,9 @@ function populateLeafletMap(apiData, map) {
           vehicle.latitude,
           vehicle.longitude
         ]);
-        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: ${vehicle.speed} km/h`);
-      } else {
-        marker.setPopupContent(`Linja: ${lineref}<br>Nopeus: 0 km/h`);
       }
+      const speedText = vehicle.speed === void 0 ? "Nopeutta lasketaan..." : `Nopeus: ${vehicle.speed} km/h`;
+      marker.setPopupContent(`Linja: ${lineref}<br>${speedText}`);
       markersByVehicleId.set(id, marker);
     });
   });
