@@ -1,0 +1,12 @@
+# Keep secrets and local files out of the image
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.claude
+.idea
+.vscode
+app/.claude
+# Tests are not needed in the image
+**/*_test.ts

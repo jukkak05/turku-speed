@@ -1,9 +1,11 @@
 services:
   turku-speed:
-    build: .
+    image: ghcr.io/jukkak05/turku-speed:latest
     restart: unless-stopped
+    # .env lives next to this file on the server (see app/.env.example)
+    env_file: .env
     expose:
-      - "8000" 
+      - "8000"
     networks:
       - proxy-net
 
