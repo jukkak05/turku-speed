@@ -10,3 +10,4 @@
 app/.claude
 # Tests are not needed in the image
 **/*_test.ts
+app/tests
