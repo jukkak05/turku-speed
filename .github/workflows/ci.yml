@@ -89,6 +89,33 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
+      # Build locally first and test it the way production runs it
+      - name: Build for smoke test
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          load: true
+          tags: turku-speed:smoke
+          cache-from: type=gha
+
+      - name: Smoke test
+        run: |
+          docker run -d --name smoke --read-only --tmpfs /tmp --cap-drop ALL \
+            --security-opt no-new-privileges:true -p 8000:8000 turku-speed:smoke
+          for i in $(seq 1 30); do
+            curl -fsS -o /dev/null http://localhost:8000/ && break
+            sleep 1
+          done
+          curl -fsS -o /dev/null http://localhost:8000/ \
+            && curl -fsS -o /dev/null http://localhost:8000/app.js \
+            || { docker logs smoke; exit 1; }
+          # Let the poller run, then fail on a crash or a denied permission (NotCapable)
+          sleep 5
+          docker logs smoke
+          [ "$(docker inspect -f '{{.State.Running}}' smoke)" = "true" ] || exit 1
+          ! docker logs smoke 2>&1 | grep -q NotCapable
+          docker rm -f smoke
+
       - name: Build and push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
