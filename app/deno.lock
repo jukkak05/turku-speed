@@ -16,7 +16,7 @@
     "jsr:@std/streams@^1.2.0": "1.2.0",
     "npm:@types/leaflet@*": "1.9.22",
     "npm:@types/leaflet@1.9.22": "1.9.22",
-    "npm:geolib@4.0.0": "4.0.0",
+    "npm:geolib@4.0.1": "4.0.1",
     "npm:leaflet@1.9.4": "1.9.4"
   },
   "jsr": {
@@ -84,8 +84,8 @@
         "@types/geojson"
       ]
     },
-    "geolib@4.0.0": {
-      "integrity": "sha512-q6xrjzO5epECM1FjYLPwAeK6FSgCrgcZeeAOMKJ5kjxyyqD+mhSXnQJGHkMb9ju9R2XFat8T0Iiuyje6VdQTow=="
+    "geolib@4.0.1": {
+      "integrity": "sha512-BmVbqZUrO3Xt4RSWQ54nuBNBngRvNRVaBBn/V903TBjb9ZQHLoEEgQKCX4rCwIqqHCY8+yBmaKSGdPXoX4lCCw=="
     },
     "leaflet@1.9.4": {
       "integrity": "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA=="
@@ -98,7 +98,7 @@
       "jsr:@std/http@^1.1.4",
       "npm:@types/leaflet@*",
       "npm:@types/leaflet@1.9.22",
-      "npm:geolib@4.0.0",
+      "npm:geolib@4.0.1",
       "npm:leaflet@1.9.4"
     ]
   }
